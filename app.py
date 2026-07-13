@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, session, redirect, url_for, jsonify
+from game_logic import inject_dynamic_notification, handle_scene_one_actions, handle_scene_five_actions, handle_scene_seven_actions
 import os
 import json
 
@@ -63,15 +64,15 @@ def exit_game():
 def get_scene_data():
 
     current_scene = session.get('current_scene', 1)
+    if current_scene == 3:
+        return get_scene_three_data()
     branching_scenes = [2, 4, 6]
 
     # 1. Автоматически определяем имя файла сценария
     if current_scene in branching_scenes:
-        # Сцены-развилки зависят от флага решения задач
         task_number = current_scene // 2
         task_solved = session.get(f'task_{task_number}_solved', False)
 
-        # Проверяем, осталось ли время на момент фиксации задачи
         time_left = session.get('time_left', 0)
 
         if task_solved and time_left > 0:
@@ -98,18 +99,13 @@ def get_scene_data():
         with open(file_path, 'r', encoding='utf-8') as f:
             scene_data = json.load(f)
 
-        # 3. ПОДСТРАХОВКА ВРЕМЕНИ (Динамический патч)
-        # Мы НЕ пишем сюда дефолтные 40. Мы смотрим: если в сессии ПРЯМО СЕЙЧАС
-        # идет игра и тикает время, мы отдаем фронту актуальное значение.
+        # 3. ПОДСТРАХОВКА ВРЕМЕНИ
         if 'time_left' in session:
             scene_data["current_time_left"] = session['time_left']
         else:
-            # Если таймер еще не запущен в сессии, фронт возьмет
-            # статичное изначальное время прямо из тела самого json (например, scene_data["task_time_limit"])
-            scene_data["current_time_left"] = scene_data.get("task_time_limit", None)
+            scene_data["current_time_left"] = scene_data.get("initial_time_limit", None)
 
         if current_scene in branching_scenes:
-            # Берем из сессии количество подсказок, которые юзер потратил на этой задаче
             hints_used = session.get(f'task_{current_scene // 2}_hints_used', 0)
 
             # Определяем текст системного уведомления на основе счетчика подсказок
@@ -125,7 +121,7 @@ def get_scene_data():
             # Добавляем уведомление в JSON, чтобы фронт его поймал и отрендерил отдельной плашкой
             scene_data["system_notification"] = system_notification
 
-        return scene_data
+        return jsonify(scene_data)
 
     except FileNotFoundError:
         return {"error": f"Файл сценария {file_path} не найден."}, 404
@@ -137,46 +133,15 @@ def game_action():
     action_id = data.get('action_id')
     current_scene = session.get('current_scene', 1)
 
-    # Диспетчер просто распределяет работу по сценам
+    # Диспетчер просто вызывает функции из внешнего файла game_logic.py
     if current_scene == 1:
         return handle_scene_one_actions(action_id)
-    elif current_scene == 3:
-        return handle_scene_three_actions(action_id)
-    # И так далее для каждой интерактивной сцены...
+    elif current_scene == 5:
+        return handle_scene_five_actions(action_id)
+    elif current_scene == 7:
+        return handle_scene_seven_actions(action_id)
 
-    return {"error": "В этой сцене нет доступных интерактивных действий"}, 400
-
-
-# ==========================================
-# функции обработки интерактивов сюжетных
-# ==========================================
-
-def handle_scene_one_actions(action_id):
-    """Логика интерактивов для Сцены №1 (Кабинет)."""
-    if action_id == 'table':
-        session['time_left'] = max(0, session.get('time_left', 40) - 5)
-        return {
-            "status": "continue",
-            "text": "Ящики заперты! (-5 минут)",
-            "time_left": session['time_left']
-        }
-    elif action_id == 'door':
-        return {
-            "status": "win",
-            "text": "Отлично! В кармане лежит конверт!",
-            "redirect_url": "/tasks"
-        }
-    return {"error": "Неизвестное действие для сцены 1"}, 400
-
-
-def handle_scene_three_actions(action_id):
-    """ПРИМЕР ТУПАЯ ЗАГЛУШКА"""
-    if action_id == 'check_glovebox':
-        return {"status": "continue", "text": "Бардачок пуст, только старые штрафы."}
-    elif action_id == 'check_seat':
-        return {"status": "win", "text": "Под сиденьем вы нашли скрытый диктофон!"}
-    return {"error": "Неизвестное действие для сцены 3"}, 400
-
+    return jsonify({"error": "В сцене нет доступных действий"}), 400
 
 # ==========================================
 # 4 ЗАДАЧИ И ПАСХАЛКИ
