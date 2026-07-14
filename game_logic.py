@@ -128,19 +128,52 @@ def handle_scene_five_actions(action_id):
             "system_notification": notification
         })
 
+
 def handle_scene_seven_actions(action_id):
-    """Логика для Сцены №7: Финальный выбор."""
-    if action_id == 'pass_by':
-        session.clear()  # Игра окончена, очищаем сессию
+    """Логика для Сцены №7: Финальный выбор (Динамическое чтение из JSON)."""
+
+    solved_count = sum([1 for i in range(1, 4) if session.get(f'task_{i}_solved', False)])
+    if solved_count == 3:
+        file_name = "scene_7_win.json"
+    elif solved_count == 2:
+        file_name = "scene_7_equal.json"
+    else:
+        file_name = "scene_7_loose.json"
+
+    try:
+        with open(f"data/{file_name}", "r", encoding="utf-8") as f:
+            scene_data = json.load(f)
+    except FileNotFoundError:
+        return jsonify({"error": "Файл концовки не найден"}), 404
+
+    # 3. Ищем, на какую кнопку нажал игрок
+    choices = scene_data.get("final_choice_interact", {}).get("choices", [])
+    selected_choice = next((c for c in choices if c["id"] == action_id), None)
+
+    if not selected_choice:
+        return jsonify({"error": "Действие не найдено"}), 400
+
+    dialogue_step = selected_choice.get("dialogue_step")
+    easter_egg_puzzle = selected_choice.get("easter_egg_puzzle")
+
+    if action_id == 'go_away':
+        session.clear()
         return jsonify({
             "status": "game_over_credits",
-            "text": "Лестрейд прошел мимо... Игра окончена."
+            "dialogue_step": dialogue_step
         })
 
     elif action_id == 'pick_card':
+        # Игрок поднимает карточку — запускаем финальное микро-испытание
         return jsonify({
-            "status": "easter_egg",
-            "text": "Вы поднимаете карточку... На ней написано знакомым почерком..."
+            "status": "start_final_puzzle",
+            "dialogue_step": dialogue_step,
+            "puzzle_config": {
+                "timer_limit_seconds": easter_egg_puzzle.get("timer_limit_seconds"),
+                "correct_word": easter_egg_puzzle.get("correct_word"),
+                "win_branch": easter_egg_puzzle.get("win_branch"),
+                "lose_branch": easter_egg_puzzle.get("lose_branch")
+            }
         })
 
 

@@ -13,8 +13,11 @@ app.secret_key = os.urandom(24)
 # ==========================================
 @app.route('/settings/toggle_sound', methods=['POST'])
 def toggle_sound():
-    session['sound'] = not session.get('sound', True)
-    return redirect(request.referrer or url_for('menu'))
+    # Меняем состояние звука в сессии
+    current_sound = session.get('sound', True)
+    session['sound'] = not current_sound
+
+    return jsonify({"sound": session['sound']})
 
 
 # ==========================================
@@ -150,16 +153,6 @@ def main_tasks():
                 "message": "Лестрейд: Хм, думаю, это не то...",
                 "time_left": session['time_left']
             })
-
-
-@app.route('/easter_egg')
-def easter_egg():
-    """ЭТО ОКНО ЗАДАЧИ ДЛЯ ПАСХАЛКИ, ЗАГЛУШКА СЕЙЧАС"""
-    return """
-        <h2>🥚 Экран пасхалки</h2>
-        <p>Вы нашли секретное досье Мориарти!</p>
-        <a href="/tasks"><button>Назад к задачам</button></a>
-    """
 
 
 if __name__ == '__main__':
