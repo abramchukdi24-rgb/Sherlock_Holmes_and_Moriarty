@@ -196,5 +196,69 @@ def get_task(task_id):
     }
     return jsonify(response_data)
 
+@app.route('/api/tasks/submit', methods=['POST'])
+def submit_task_answer():
+    """
+    Принимает от фронта текущие замены и проверяет решение.
+    """
+    data = request.json or {}
+    task_id = data.get('task_id')
+    user_replacements = data.get('replacements', {})
+    scytale_applied = data.get('scytale_applied', False)
+
+    # Загружаем статику задачи
+    task_data = load_task_data(task_id)
+    if not task_data:
+        return jsonify({"error": "Задача не найдена"}), 404
+
+    # Сохраняем пришедшие замены в сессию + декодируем на их основе
+    session[f"task_{task_id}_replacements"] = user_replacements
+    decoded_text = apply_letter_replacements(task_data["ciphertext"], user_replacements)
+
+    # Логика проверки
+    is_correct = False
+
+    if task_id == 2:
+        # Для Скиталы проверяем: применил ли уже игрок скиталу?
+        if scytale_applied:
+            scytale_decoded = read_scytale_line(decoded_text, step=4)
+            if normalize_text(scytale_decoded) == normalize_text(task_data["original_text"]):
+                is_correct = True
+        else:
+            # Если скитала не применена, проверяем, разгадал ли он буквы самого скитала-текста
+            if normalize_text(decoded_text) == normalize_text(task_data["skytala_text"]):
+                return jsonify({
+                    "status": "trigger_scytale_hint",
+                    "message": "Лестрейд: Буквы на месте, но это белиберда. Нужен спартанский метод..."
+                })
+    else:
+        # Для задач 1 и 3 сравниваем декодированный текст с оригиналом
+        if normalize_text(decoded_text) == normalize_text(task_data["original_text"]):
+            is_correct = True
+
+    # Обрабатываем вердикт проверки
+    if is_correct:
+        # Помечаем задачу решенной в сессии
+        session[f"task_{task_id}_solved"] = True
+
+        # Находим текст сообщения об успехе
+        success_msg = task_data.get("messages", {}).get("success")
+
+        return jsonify({
+            "status": "success",
+            "message": success_msg
+        })
+    else:
+        # штраф 10 минут за неверный ответ
+        session['time_left'] = max(0, session.get('time_left', 40) - 10)
+
+        wrong_msg = task_data.get("messages", {}).get("wrong")
+
+        return jsonify({
+            "status": "wrong",
+            "message": wrong_msg,
+            "time_left": session['time_left']
+        })
+
 if __name__ == '__main__':
     app.run(debug=True)
