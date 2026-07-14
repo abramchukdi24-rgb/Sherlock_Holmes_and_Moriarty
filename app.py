@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify
 from game_logic import inject_dynamic_notification, handle_scene_one_actions, get_scene_three_data, handle_scene_five_actions, handle_scene_seven_actions
+from text_logic import apply_letter_replacements, read_scytale_line, normalize_text, calculate_completion_percentage, calculate_frequency
 import os
 import json
 
@@ -134,26 +135,66 @@ def game_action():
     return jsonify({"error": "В сцене нет доступных действий"}), 400
 
 # ==========================================
-# 4 ЗАДАЧИ И ПАСХАЛКИ
+# 4 ЗАДАЧИ
 # ==========================================
 @app.route('/tasks')
 def main_tasks():
-    def submit_task_answer():
-        user_answer = request.json.get('answer', '').strip().lower()
-        correct_answer = "мориарти"  # или правильный ответ для этой задачи
+    """
+    Основная страница с задачами
+    """
+    # Проверяем, начата ли вообще игра
+    if not session.get('game_started'):
+        return redirect(url_for('menu'))
 
-        if user_answer == correct_answer:
-            session['task_2_solved'] = True
-            return jsonify({"status": "success", "message": "Лестрейд: Оно, стоит попробовать."})
-        else:
-            # Наказываем за ошибку: отнимаем 10 минут
-            session['time_left'] = max(0, session.get('time_left', 40) - 10)
-            return jsonify({
-                "status": "wrong",
-                "message": "Лестрейд: Хм, думаю, это не то...",
-                "time_left": session['time_left']
-            })
+    # Рендерим шаблон tasks.html
+    return render_template('tasks.html')
 
+def load_task_data(task_id):
+    """Вспомогательная функция для загрузки статического JSON задачи."""
+    try:
+        with open(f"data/task_{task_id}.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return None
+
+@app.route('/api/tasks/<int:task_id>', methods=['GET'])
+def get_task(task_id):
+    """
+    Отдает фронту данные задачи: статику из JSON + динамику из сессии.
+    """
+    task_data = load_task_data(task_id)
+    if not task_data:
+        return jsonify({"error": f"Задача {task_id} не найдена"}), 404
+
+    # Вытаскиваем динамические данные из сессии
+    replacements_key = f"task_{task_id}_replacements"
+    if replacements_key not in session:
+        session[replacements_key] = {}
+
+    current_replacements = session[replacements_key]
+    time_left = session.get('time_left')
+
+    # Применяем замены к шифртексту + частотный анализ
+    ciphertext = task_data["ciphertext"]
+    decoded_text = apply_letter_replacements(ciphertext, current_replacements)
+    freq = calculate_frequency(ciphertext)
+
+    # Считаем процент выполнения
+    completion = calculate_completion_percentage(ciphertext, current_replacements)
+
+    # Собираем ответ для фронтенда
+    response_data = {
+        "task_id": task_data["task_id"],
+        "intro_slides": task_data.get("intro_slides", []),
+        "use_scytale": task_data.get("use_scytale", False),
+        "ciphertext": ciphertext,
+        "decoded_text": decoded_text,
+        "frequencies": freq,
+        "current_replacements": current_replacements,
+        "current_time_left": time_left,
+        "completion_percentage": completion
+    }
+    return jsonify(response_data)
 
 if __name__ == '__main__':
     app.run(debug=True)
