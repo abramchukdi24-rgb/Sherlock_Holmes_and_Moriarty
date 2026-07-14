@@ -21,4 +21,35 @@ def calculate_frequency(ciphertext):
     return sorted_frequency
 
 
+def apply_letter_replacements(ciphertext, replacements):
+    """
+    Принимает исходный шифртекст и словарь замен вида {'а': 'О', 'б': 'Н'}.
+    Возвращает текст, где замененные буквы заглавные, а остальные — строчные.
+    """
+    if not ciphertext:
+        return ""
 
+    result = []
+    for char in ciphertext:
+        # Приводим к нижнему регистру для поиска в словаре замен
+        char_lower = char.lower()
+
+        if char_lower in replacements:
+            # Берем замену. Если оригинальная буква была заглавной,
+            # сохраняем заглавную, иначе делаем строчной (или оставляем как прислал фронт)
+            replacement_char = replacements[char_lower]
+            if char.isupper():
+                result.append(replacement_char.upper())
+            else:
+                result.append(replacement_char.lower())
+        else:
+            # Если замены нет, оставляем оригинальный символ
+            result.append(char)
+
+    return "".join(result)
+
+
+def read_scytale_line(text, step, start_index=0):
+    if not text:
+        return ""
+    return text[start_index::step]
