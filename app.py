@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify
-from game_logic import inject_dynamic_notification, handle_scene_one_actions, handle_scene_five_actions, handle_scene_seven_actions
+from game_logic import inject_dynamic_notification, handle_scene_one_actions, get_scene_three_data, handle_scene_five_actions, handle_scene_seven_actions
 import os
 import json
 
@@ -62,17 +62,16 @@ def exit_game():
 # ==========================================
 @app.route('/api/scene', methods=['GET'])
 def get_scene_data():
-
     current_scene = session.get('current_scene', 1)
+
     if current_scene == 3:
         return get_scene_three_data()
-    branching_scenes = [2, 4, 6]
 
-    # 1. Автоматически определяем имя файла сценария
-    if current_scene in branching_scenes:
+    file_name = None
+
+    if current_scene % 2 == 0:
         task_number = current_scene // 2
         task_solved = session.get(f'task_{task_number}_solved', False)
-
         time_left = session.get('time_left', 0)
 
         if task_solved and time_left > 0:
@@ -80,6 +79,7 @@ def get_scene_data():
         else:
             file_name = f"scene_{current_scene}_death.json"
 
+    # Сцена 7
     elif current_scene == 7:
         solved_count = sum([1 for i in range(1, 4) if session.get(f'task_{i}_solved', False)])
         if solved_count == 3:
@@ -89,43 +89,30 @@ def get_scene_data():
         else:
             file_name = "scene_7_loose.json"
     else:
-        # Обычные сюжетные сцены (1, 3, 5)
         file_name = f"scene_{current_scene}.json"
 
     file_path = f"data/{file_name}"
 
-    # 2. Читаем файл сценария
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             scene_data = json.load(f)
 
-        # 3. ПОДСТРАХОВКА ВРЕМЕНИ
-        if 'time_left' in session:
-            scene_data["current_time_left"] = session['time_left']
-        else:
-            scene_data["current_time_left"] = scene_data.get("initial_time_limit", None)
+        # 1. запомнить время в сессии
+        if 'time_left' not in session or session.get('last_tracked_scene') != current_scene:
+            # Берём лимит из JSON файла сцены
+            session['time_left'] = scene_data.get("initial_time_limit", 40)
+            # Запоминаем, для какой сцены мы только что инициализировали этот таймер
+            session['last_tracked_scene'] = current_scene
 
-        if current_scene in branching_scenes:
-            hints_used = session.get(f'task_{current_scene // 2}_hints_used', 0)
+            # 2. добавляем динамическое время из сессии в JSON
+        scene_data["current_time_left"] = session['time_left']
 
-            # Определяем текст системного уведомления на основе счетчика подсказок
-            if hints_used == 1:
-                system_notification = "[Системное уведомление: Вы нашли листок бумаги]"
-            elif hints_used == 2:
-                system_notification = "[Системное уведомление: Похоже, вас ожидают]"
-            elif hints_used >= 3:
-                system_notification = "[Системное уведомление: Он оставил слишком много]"
-            else:
-                system_notification = None  # Если 0 подсказок — уведомления нет
-
-            # Добавляем уведомление в JSON, чтобы фронт его поймал и отрендерил отдельной плашкой
-            scene_data["system_notification"] = system_notification
+        # 3. Добавляем системные уведомления
+        scene_data = inject_dynamic_notification(scene_data, current_scene)
 
         return jsonify(scene_data)
-
     except FileNotFoundError:
-        return {"error": f"Файл сценария {file_path} не найден."}, 404
-
+        return jsonify({"error": f"Файл сценария {file_path} не найден."}), 404
 
 @app.route('/api/game/action', methods=['POST'])
 def game_action():
