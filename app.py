@@ -135,26 +135,21 @@ def game_action():
 # ==========================================
 @app.route('/tasks')
 def main_tasks():
-    # Быстрый чит-код для проверки Сцены 2: /tasks?solve=true
-    if request.args.get('solve') == 'true':
-        session['task_1_solved'] = True
-        session['current_scene'] = 2  # Переключаем сессию на вторую сцену
-        return "<h3>Успех! Задача решена, сессия переключена на Сцену 2. <a href='/api/scene'>Перейти к результату</a></h3>"
+    def submit_task_answer():
+        user_answer = request.json.get('answer', '').strip().lower()
+        correct_answer = "мориарти"  # или правильный ответ для этой задачи
 
-    # Чит-код для провала: /tasks?solve=false
-    if request.args.get('solve') == 'false':
-        session['task_1_solved'] = False
-        session['current_scene'] = 2
-        return "<h3>Время вышло! Задача провалена, сессия переключена на Сцену 2. <a href='/api/scene'>Перейти к результату</a></h3>"
-
-    return f"""
-        <h2>🧩 Экран главных задач</h2>
-        <p>Оставшееся время: {session.get('time_left', 40)} мин.</p>
-        <a href="/tasks?solve=true"><button>Имитировать УСПЕХ (Спасение)</button></a> | 
-        <a href="/tasks?solve=false"><button>Имитировать ПРОВАЛ (Смерть)</button></a> <br><br>
-        <a href="/easter_egg"><button>Пойти искать пасхалку</button></a> | 
-        <a href="/"><button>В меню</button></a>
-    """
+        if user_answer == correct_answer:
+            session['task_2_solved'] = True
+            return jsonify({"status": "success", "message": "Лестрейд: Оно, стоит попробовать."})
+        else:
+            # Наказываем за ошибку: отнимаем 10 минут
+            session['time_left'] = max(0, session.get('time_left', 40) - 10)
+            return jsonify({
+                "status": "wrong",
+                "message": "Лестрейд: Хм, думаю, это не то...",
+                "time_left": session['time_left']
+            })
 
 
 @app.route('/easter_egg')
