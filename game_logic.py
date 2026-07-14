@@ -107,20 +107,25 @@ def handle_scene_five_actions(action_id):
     if not selected_choice:
         return jsonify({"error": "Действие не найдено"}), 400
 
-    if action_id == 'interrogate':
+    # Забираем системное уведомление и шаги диалога прямо из JSON
+    notification = selected_choice.get("system_notification")
+    dialogue_steps = selected_choice.get("dialogue_steps", [])
+
+    if action_id == 'interrogation':
         session['time_left'] = max(0, session.get('time_left', 40) - 10)
         return jsonify({
             "status": "continue",
-            "text": selected_choice.get("result_text"),
+            "dialogue_steps": dialogue_steps,
             "time_left": session['time_left'],
-            "system_notification": "[Системное уведомление: Вы потеряли 10 минут!]"
+            "system_notification": notification
         })
 
-    elif action_id == 'cipher':
+    elif action_id == 'code':
         return jsonify({
             "status": "win",
-            "text": selected_choice.get("result_text"),
-            "time_left": session['time_left']
+            "dialogue_steps": dialogue_steps,
+            "time_left": session['time_left'],
+            "system_notification": notification
         })
 
 def handle_scene_seven_actions(action_id):
