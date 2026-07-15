@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Главное меню</title>
+    <!-- Эта строчка связывает наш HTML с файлом стилей CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="menu-body">
+
+    <!-- Главный контейнер меню -->
+    <div class="menu-container">
+        
+        <!-- Название игры -->
+        <h1 class="game-title">название игры</h1>
+        
+        <!-- Блок с кнопками -->
+        <div class="menu-buttons">
+            <!-- Кнопка "Начать дело". Она отправляет команду на бэкэнд по адресу /start -->
+            <a href="/start" class="btn">Начать дело</a>
+            
+            <!-- Кнопка "Выйти". Она отправляет команду по адресу /exit_game -->
+            <a href="/exit_game" class="btn">Выйти</a>
+        </div>
+
+    </div>
+
+</body>
+</html>
