@@ -50,6 +50,10 @@ def menu():
         game_started=game_started,
         sound_enabled=sound_enabled)
 
+@app.route('/game')
+def game_screen():
+    """Этот роут просто открывает файл с дизайном игры"""
+    return render_template('game.html')
 
 @app.route('/start')
 def start_game():
@@ -61,7 +65,7 @@ def start_game():
     for task_id in [1, 2, 3]:
         session[f"task_{task_id}_replacements"] = {}
         session[f"task_{task_id}_solved"] = False
-    return redirect(url_for('get_scene_data'))
+    return redirect(url_for('game_screen'))
 
 
 @app.route('/continue')
@@ -69,7 +73,7 @@ def continue_game():
     """Продолжение игры с сохраненного места"""
     if not session.get('game_started'):
         return redirect(url_for('menu'))
-    return redirect(url_for('get_scene_data'))
+    return redirect(url_for('game_screen'))
 
 @app.route('/save_and_exit')
 def save_and_exit():                     #роут для выхода из игрового процесса
