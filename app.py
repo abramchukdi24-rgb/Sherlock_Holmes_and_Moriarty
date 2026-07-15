@@ -288,5 +288,13 @@ def submit_task_answer():
             "time_left": new_time
         })
 
+@app.route('/api/debug/solve_all', methods=['GET'])
+def debug_solve_all():
+    session['task_1_solved'] = True
+    session['task_2_solved'] = True
+    session['task_3_solved'] = True
+    session['time_left'] = 40
+    return jsonify({"status": "ok", "message": "Все задачи помечены как решенные!"})
+
 if __name__ == '__main__':
     app.run(debug=True)
