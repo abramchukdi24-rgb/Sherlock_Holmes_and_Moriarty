@@ -20,10 +20,6 @@ def inject_dynamic_notification(scene_data, current_scene):
     return scene_data
 
 
-import json
-from flask import session, jsonify
-
-
 def handle_scene_one_actions(action_id):
     """Логика для Сцены №1: Кабинет. Чистый поиск в JSON."""
     try:
@@ -64,23 +60,22 @@ def get_scene_three_data():
     final_scene = {
         "scene_id": 3,
         "background": full_data["background"],
-        "intro_text_1": full_data["common_intro"]["text_1"],
-        "intro_text_2": full_data["common_intro"]["text_2"],
+        "intro_steps": full_data["intro_steps"],  # заменены ключи на соответствующие ключам scene_3.json
         "interact": full_data["interact_action"],
-        "outro_text": full_data["common_outro"]
+        "outro_steps": full_data["moriarty_outro"]
     }
 
     # Склеиваем звонок Мориарти и ветку рапорта в зависимости от исхода
     if task_1_solved and time_left > 0:
         # ВЕТКА А (Успех)
-        final_scene["moriarty_text"] = full_data["moriarty_speech"]["save_variant"]
-        final_scene["report_text"] = full_data["branches"]["branch_a"]["text"]
+        final_scene["moriarty_variant"] = full_data["moriarty_variations"]["save"]
+        final_scene["report_steps"] = full_data["branches"]["branch_a"]
         final_scene["system_notification"] = None
     else:
         # ВЕТКА Б (Провал)
-        final_scene["moriarty_text"] = full_data["moriarty_speech"]["death_variant"]
-        final_scene["report_text"] = full_data["branches"]["branch_b"]["text"]
-        final_scene["system_notification"] = full_data["branches"]["branch_b"]["system_notification"]
+        final_scene["moriarty_variant"] = full_data["moriarty_variations"]["death"]
+        final_scene["report_steps"] = full_data["branches"]["branch_b"]
+        final_scene["system_notification"] = "[Вы потеряли 10 минут на работу с базой данных!]"
 
         # Применяем штраф 10 минут за архив базы данных (один раз!)
         if not session.get('scene_3_penalty_applied', False):
@@ -90,7 +85,7 @@ def get_scene_three_data():
 
     # Записываем актуальное время
     final_scene["current_time_left"] = time_left
-
+    session['last_tracked_scene'] = 3 # ФИКСИРУЕМ ПРОХОЖДЕНИЕ СЦЕНЫ
     return jsonify(final_scene)
 
 def handle_scene_five_actions(action_id):
@@ -107,25 +102,17 @@ def handle_scene_five_actions(action_id):
     if not selected_choice:
         return jsonify({"error": "Действие не найдено"}), 400
 
-    # Забираем системное уведомление и шаги диалога прямо из JSON
-    notification = selected_choice.get("system_notification")
-    dialogue_steps = selected_choice.get("dialogue_steps", [])
+        # Изменена логика вычитания штрафа. Штраф и системное уведомление берется из scene_3.json
+        penalty = selected_choice.get("penalty_minutes", 0)
+        if penalty > 0:
+            # Берем текущий лимит, дефолт равен лимиту этой сцены (30)
+            session['time_left'] = max(0, session.get('time_left', 30) - penalty)
 
-    if action_id == 'interrogation':
-        session['time_left'] = max(0, session.get('time_left', 40) - 10)
         return jsonify({
-            "status": "continue",
-            "dialogue_steps": dialogue_steps,
-            "time_left": session['time_left'],
-            "system_notification": notification
-        })
-
-    elif action_id == 'code':
-        return jsonify({
-            "status": "win",
-            "dialogue_steps": dialogue_steps,
-            "time_left": session['time_left'],
-            "system_notification": notification
+            "status": "win" if selected_choice.get("is_win") else "continue",
+            "dialogue_steps": selected_choice.get("dialogue_steps", []),
+            "time_left": session.get('time_left', 30),
+            "system_notification": selected_choice.get("system_notification")
         })
 
 
