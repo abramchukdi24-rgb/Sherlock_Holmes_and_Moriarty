@@ -274,15 +274,18 @@ def submit_task_answer():
             "message": success_msg
         })
     else:
-        # штраф 10 минут за неверный ответ
-        session['time_left'] = max(0, session.get('time_left', 40) - 10)
+        # Штраф 10 минут за неверный ответ
+        current_time = session.get('time_left', 40)
+        new_time = max(0, current_time - 10)
+        session['time_left'] = new_time
+        session.modified = True
 
         wrong_msg = task_data.get("messages", {}).get("wrong")
 
         return jsonify({
             "status": "wrong",
             "message": wrong_msg,
-            "time_left": session['time_left']
+            "time_left": new_time
         })
 
 if __name__ == '__main__':

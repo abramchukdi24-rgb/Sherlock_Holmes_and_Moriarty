@@ -19,6 +19,32 @@ def inject_dynamic_notification(scene_data, current_scene):
     scene_data["system_notification"] = notification_text
     return scene_data
 
+def apply_penalty(penalty_minutes, current_scene_id, action_id=None):
+    """
+    Вычитает штраф из времени сессии первый раз взаимодействия.
+    Возвращает кортеж: (new_time, is_game_over)
+    """
+    # Достаем список уже примененных штрафов
+    applied_penalties = session.get('applied_penalties', [])
+
+    # Создаем уникальный ключ текущего действия + берем время
+    penalty_key = f"scene_{current_scene_id}_{action_id}" if action_id else f"scene_{current_scene_id}"
+    current_time = session.get('time_left', 40)
+
+    # игнорир
+    if penalty_key in applied_penalties:
+        return current_time, current_time <= 0
+
+    # штраф новый
+    if penalty_minutes > 0:
+        current_time = max(0, current_time - penalty_minutes)
+        session['time_left'] = current_time
+
+        # Запоминаем, что этот штраф мы списали
+        applied_penalties.append(penalty_key)
+        session['applied_penalties'] = applied_penalties
+        session.modified = True
+    return current_time
 
 def handle_scene_one_actions(action_id):
     """Логика для Сцены №1: Кабинет. Чистый поиск в JSON."""
@@ -31,18 +57,13 @@ def handle_scene_one_actions(action_id):
     choices = scene_data.get("search_interact", {}).get("choices", [])
     selected_choice = next((c for c in choices if c["id"] == action_id), None)
 
-    if not selected_choice:
-        return jsonify({"error": "Действие не найдено"}), 400
-
-    # Списываем штраф, который указан в самом JSON
     penalty = selected_choice.get("penalty_minutes", 0)
-    if penalty > 0:
-        session['time_left'] = max(0, session.get('time_left', 40) - penalty)
+    time_left = apply_penalty(penalty, current_scene_id=1, action_id=action_id)
 
     return jsonify({
         "status": "win" if selected_choice.get("is_win") else "continue",
         "text": selected_choice.get("result_text"),
-        "time_left": session['time_left']
+        "time_left": time_left
     })
 
 def get_scene_three_data():
@@ -102,18 +123,19 @@ def handle_scene_five_actions(action_id):
     if not selected_choice:
         return jsonify({"error": "Действие не найдено"}), 400
 
-        # Изменена логика вычитания штрафа. Штраф и системное уведомление берется из scene_3.json
-        penalty = selected_choice.get("penalty_minutes", 0)
-        if penalty > 0:
-            # Берем текущий лимит, дефолт равен лимиту этой сцены (30)
-            session['time_left'] = max(0, session.get('time_left', 30) - penalty)
+    penalty = selected_choice.get("penalty_minutes", 0)
 
-        return jsonify({
-            "status": "win" if selected_choice.get("is_win") else "continue",
-            "dialogue_steps": selected_choice.get("dialogue_steps", []),
-            "time_left": session.get('time_left', 30),
-            "system_notification": selected_choice.get("system_notification")
-        })
+    if 'time_left' not in session:
+        session['time_left'] = 30
+
+    time_left = apply_penalty(penalty, current_scene_id=5, action_id=action_id)
+
+    return jsonify({
+        "status": "win" if selected_choice.get("is_win") else "continue",
+        "dialogue_steps": selected_choice.get("dialogue_steps", []),
+        "time_left": time_left,
+        "system_notification": selected_choice.get("system_notification")
+    })
 
 
 def handle_scene_seven_actions(action_id):
