@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'Arcade'; /* Это имя, которое мы даем шрифту */
-    src: url('../fonts/Our-Arcade-Games.ttf'); /* Укажи тут точное название твоего файла шрифта! */
+    src: url('../fonts/ArcadeJeu-Regular.otf'); /* Укажи тут точное название твоего файла шрифта! */
 }
 
 /* ========================================================== */
@@ -22,48 +22,68 @@
     justify-content: center;
     align-items: center;
     
-    font-family: Arial, sans-serif; /* Обычный понятный шрифт */
+    font-family: 'Arcade', sans-serif; /* Обычный понятный шрифт */
 }
 
 /* Настройки для самого окошка меню */
 .menu-container {
-    background-color: rgba(0, 0, 0, 0.7); /* Полупрозрачный черный фон, чтобы текст читался на картинке */
-    padding: 50px;
-    border-radius: 15px; /* Скругляем углы */
+
     text-align: center; /* Текст по центру */
-    border: 2px solid white; /* Белая рамочка */
+
 }
 
 /* Настройки для названия игры */
 .game-title {
     color: white; /* Белый цвет текста */
-    font-size: 40px; /* Размер шрифта */
-    margin-bottom: 40px; /* Отступ снизу до кнопок */
+    font-size: 50px; /* Размер шрифта */
+    margin-bottom: 60px;
+    letter-spacing: 5px; 
+    text-shadow: 4px 4px 0px rgba(0,0,0,0.5);
 }
 
 /* Настройки для блока с кнопками, чтобы они были друг под другом */
 .menu-buttons {
     display: flex;
-    flex-direction: column; /* Выстраиваем кнопки в колонку */
-    gap: 20px; /* Расстояние между кнопками */
+    flex-direction: column;
+    gap: 25px;
+    align-items: center;
 }
 
 /* Превращаем обычные ссылки в КРАСИВЫЕ КНОПКИ */
 .btn {
-    background-color: #4CAF50; /* Зеленый цвет кнопки */
-    color: white; /* Белый текст на кнопке */
-    text-decoration: none; /* Убираем нижнее подчеркивание у ссылки */
-    padding: 15px 30px; /* Внутренние отступы (высота и ширина кнопки) */
-    font-size: 20px; /* Размер текста */
-    border-radius: 5px; /* Немного скругляем углы кнопки */
-    font-weight: bold; /* Жирный текст */
-    transition: 0.3s; /* Плавная анимация при наведении */
+    color: white;
+    text-decoration: none;
+    padding: 15px 0;
+    width: 350px; /* Делаем кнопки одинаковой ширины */
+    font-size: 18px;
+    border-radius: 10px;
+    font-weight: bold;
+    transition: 0.2s;
+    display: block;
+    text-align: center;
+    /* ТЕНЬ ДЛЯ КНОПКИ: делает её объемной */
+    box-shadow: 0px 6px 0px rgba(0, 0, 0, 0.4); 
 }
 
-/* Эффект, когда мы наводим мышку на кнопку */
+/* Цвет кнопки НАЧАТЬ (Желто-оранжевый) */
+.btn-start {
+    background-color: #a66c1c; 
+}
+
+/* Цвет кнопки ВЫЙТИ (Коричневый) */
+.btn-exit {
+    background-color: #37240a; 
+}
+
+/* Эффект при нажатии: кнопка "вдавливается" */
+.btn:active {
+    transform: translateY(4px);
+    box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.4);
+}
+
+/* Эффект при наведении: чуть ярче */
 .btn:hover {
-    background-color: #3e8e41; /* Цвет становится чуть темнее */
-    transform: scale(1.05); /* Кнопка чуть-чуть увеличивается */
+    filter: brightness(1.1);
 }
 
 /* ========================================================== */
