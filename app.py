@@ -12,9 +12,24 @@ app.secret_key = os.urandom(24)
 # ==========================================
 # НАСТРОЙКИ (ПРИМЕР)
 # ==========================================
+@app.route('/api/rules', methods=['GET'])
+def get_rules():
+    """
+    Читает правила игры из статического JSON-файла и отдает их фронтенду.
+    """
+    try:
+        with open("data/rules.json", "r", encoding="utf-8") as f:
+            rules_data = json.load(f)
+        return jsonify(rules_data)
+    except FileNotFoundError:
+        # Резервный вариант на случай, если файл потерялся, чтобы бэк не упал
+        return jsonify({
+            "title": "Инструктаж",
+            "steps": ["Правила временно недоступны. Разгадайте шифры Мориарти!"]
+        }), 404
+
 @app.route('/settings/toggle_sound', methods=['POST'])
 def toggle_sound():
-    # Меняем состояние звука в сессии
     current_sound = session.get('sound', True)
     session['sound'] = not current_sound
 
@@ -27,16 +42,13 @@ def toggle_sound():
 @app.route('/')
 def menu():
     game_started = session.get('game_started', False)
-    action_button_text = "Продолжить дело" if game_started else "Открыть дело"
-    action_url = url_for('continue_game') if game_started else url_for('start_game')
+    sound_enabled = session.get('sound', True)  # по умолчанию звук включен
 
-    return f"""
-        <h1>🕵 Главное меню: Дело Мориарти</h1>
-        <p>Настройки: Звук [{'ВКЛ' if session.get('sound', True) else 'ВЫКЛ'}]</p>
-        <hr>
-        <a href="{action_url}"><button>{action_button_text}</button></a><br><br>
-        <a href="/exit_game"><button>Выход</button></a>
-    """
+    # Отдаем фронту меню и прокидываем переменные
+    return render_template(
+        'menu.html',
+        game_started=game_started,
+        sound_enabled=sound_enabled)
 
 
 @app.route('/start')
@@ -45,20 +57,28 @@ def start_game():
     session['game_started'] = True
     session['current_scene'] = 1
     session['time_left'] = 40
-    session['task_1_solved'] = False
+    # сброс истории изменений в задачах
+    for task_id in [1, 2, 3]:
+        session[f"task_{task_id}_replacements"] = {}
+        session[f"task_{task_id}_solved"] = False
     return redirect(url_for('get_scene_data'))
 
 
 @app.route('/continue')
 def continue_game():
-    """Продолжение игры с сохраненного места (начала текущей сцены)."""
+    """Продолжение игры с сохраненного места"""
+    if not session.get('game_started'):
+        return redirect(url_for('menu'))
     return redirect(url_for('get_scene_data'))
 
+@app.route('/save_and_exit')
+def save_and_exit():                     #роут для выхода из игрового процесса
+    return redirect(url_for('menu'))
 
 @app.route('/exit_game')
 def exit_game():
     session.clear()
-    return "<h1>Игра закрыта. Сессия очищена.</h1><a href='/'>Вернуться в меню</a>"
+    return redirect(url_for('menu')) #убрана затычка
 
 
 # ==========================================
@@ -66,9 +86,14 @@ def exit_game():
 # ==========================================
 @app.route('/api/scene', methods=['GET'])
 def get_scene_data():
-    current_scene = session.get('current_scene', 1)
+    #изменено: фронт ПЕРЕДАЕТ айди сцены, иначе устанавливает бэк
+    current_scene = request.args.get('scene_id', session.get('current_scene', 1), type=int)
+
+    # Обязательно синхронизируем сессию, чтобы другие функции знали, где мы
+    session['current_scene'] = current_scene
 
     if current_scene == 3:
+        session['last_tracked_scene'] = 3  #СТРОКА НУЖНА ДЛЯ КОРРЕКТНОЙ ФИКСАЦИИ СЦЕНЫ
         return get_scene_three_data()
 
     file_name = None
