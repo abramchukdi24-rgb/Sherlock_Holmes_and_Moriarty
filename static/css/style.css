@@ -96,30 +96,109 @@
 /* =======Настройки для сцен================================= */
 /* ========================================================== */
 
-body, html { margin: 0; height: 100%; overflow: hidden; }
 
-#game-container {
-    width: 100vw; height: 100vh;
-    position: relative;
-}
+.game-body { margin: 0; background: #000; overflow: hidden; font-family: 'Arcade Gamer', sans-serif; }
+
+#game-screen { position: relative; width: 100vw; height: 100vh; }
 
 #bg-layer {
-    width: 100%; height: 100%;
-    background-size: cover;
-    background-position: center;
-    transition: background 0.5s ease; /* Плавная смена фона */
+    position: absolute; width: 100%; height: 100%;
+    background-size: cover; background-position: center;
+    z-index: 1;
 }
 
-#character-layer {
+/* Персонаж слева */
+#char-img {
     position: absolute; bottom: 0; left: 0;
-    width: 200px; /* Ширина персонажа */
+    height: 90vh; z-index: 2;
+    display: none; /* Скрыт по умолчанию */
 }
 
-#character-layer img { width: 100%; }
+#text-layer {
+    position: absolute;
+    bottom: 12%; /* Расстояние от нижнего края */
+    left: 0;
+    right: 0;
+    z-index: 3;
+    
+    /* ВЫРАВНИВАНИЕ И ОТСТУП */
+    text-align: left; /* Текст по левому краю */
+    padding-left: 25%; /* ОГРОМНЫЙ отступ слева (чтобы персонаж не закрывал текст) */
+    padding-right: 10%; /* Отступ справа для симметрии */
+    box-sizing: border-box; /* Чтобы отступы не ломали ширину экрана */
+}
 
-#text-box {
-    position: absolute; bottom: 50px; left: 10%; right: 10%;
-    background: rgba(0, 0, 0, 0.7); /* Полупрозрачный черный фон */
-    color: white; padding: 20px; border: 2px solid #555;
-    font-size: 1.2rem;
+#main-dialogue {
+    color: white;
+    
+    /* ШРИФТ И РАЗМЕР */
+    font-family: 'Arcade', sans-serif; 
+    font-size: 15px; 
+    
+    line-height: 1.15; /* Расстояние между строчками текста */
+    
+    /* ТЕНЬ (чтобы текст не сливался с фоном) */
+    text-shadow: 
+        2px 2px 0 #000,
+       -2px -2px 0 #000,
+        2px -2px 0 #000,
+       -2px 2px 0 #000,
+        0px 5px 10px rgba(0,0,0,1);
+}
+
+/* Прозрачный слой для клика */
+#click-overlay {
+    position: absolute; width: 100%; height: 100%;
+    z-index: 4; cursor: pointer;
+}
+
+/* Слой для кнопок выбора */
+#choices-overlay {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5; display: flex; flex-direction: column; gap: 20px;
+}
+
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* =======стиль для навигации================================ */
+/* ========================================================== */
+
+
+/* Панель управления вверху справа */
+#UI-menu {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10; /* Чтобы кнопки всегда были сверху */
+    display: flex;
+    gap: 15px;
+}
+
+#UI-menu button {
+    background: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон под иконкой */
+    border: 2px solid white;
+    border-radius: 50%; /* Делаем кнопки круглыми */
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s;
+}
+
+#UI-menu button:hover {
+    background: #FFB84C; /* При наведении кнопка станет оранжевой */
+    transform: scale(1.1);
+}
+
+#UI-menu img {
+    width: 30px;
+    height: 30px;
 }

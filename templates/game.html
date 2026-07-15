@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Детективчик</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="game-body">
+
+    <div id="game-screen">
+        <!-- 1. Фон -->
+        <div id="bg-layer"></div>
+
+        <!-- 2. Персонаж -->
+        <img id="char-img" src="" alt="">
+
+        <!-- 3. Твоё UI-меню из index.html (перенесли сюда) -->
+        <div id="UI-menu">
+            <button type="button" id="rules-btn" title="Правила">
+                <img src="{{ url_for('static', filename='images/icons/rules.png') }}" alt="?">
+            </button> 
+            <button type="button" id="mute-btn" title="Звук">
+                <img src="{{ url_for('static', filename='images/icons/sound_on.png') }}" alt="S">
+            </button> 
+            <button type="button" id="exit-btn" title="Выход">
+                <img src="{{ url_for('static', filename='images/icons/exit.png') }}" alt="X">
+            </button> 
+        </div>
+
+        <!-- 4. Текст (только тени, как ты просила) -->
+        <div id="text-layer">
+            <p id="main-dialogue"></p>
+        </div>
+
+        <!-- 5. Слой для клика (чтобы листать текст) -->
+        <div id="click-overlay"></div>
+        
+        <!-- 6. Слой для кнопок выбора (появятся в конце) -->
+        <div id="choices-overlay"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>
