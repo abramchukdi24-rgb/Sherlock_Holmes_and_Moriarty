@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Слой фона -->
+        <div id="bg-layer"></div>
+
+        <!-- Слой персонажа (левый нижний угол) -->
+        <div id="character-layer">
+            <img id="character-img" src="" alt="Персонаж">
+        </div>
+
+        <!-- Слой текста -->
+        <div id="text-box">
+            <p id="main-text"></p>
+            <div id="options-container"></div>
+        </div>
+    </div>
+
+    <!-- Подключаем JS -->
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>
