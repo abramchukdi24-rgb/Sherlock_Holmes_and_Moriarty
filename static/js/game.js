@@ -99,5 +99,39 @@ function showChoicesUI() {
     });
 }
 
+// ФУНКЦИЯ ДЛЯ ЗАСТАВКИ
+function render() {
+    const step = sceneData[currentState][currentStep];
+    const gameScreen = document.getElementById('game-screen');
+
+    // --- ПРОВЕРКА: ЗАСТАВКА ИЛИ ДИАЛОГ? ---
+    if (step.is_title_screen) {
+        // Если это заставка - включаем "черный режим"
+        gameScreen.classList.add('title-mode');
+    } else {
+        // Если это обычный кадр - выключаем его
+        gameScreen.classList.remove('title-mode');
+    }
+
+    // --- ЛОГИКА ФОНА ---
+    if (!step.is_title_screen) {
+        const bgFile = step.background || sceneData.background;
+        document.getElementById('bg-layer').style.backgroundImage = `url('/static/images/backgrounds/${bgFile}')`;
+    }
+
+    // --- ЛОГИКА ПЕРСОНАЖА ---
+    const charImg = document.getElementById('char-img');
+    if (step.character && !step.is_title_screen) {
+        charImg.src = `/static/images/characters/${step.character}.png`;
+        charImg.style.display = 'block';
+    } else {
+        charImg.style.display = 'none';
+    }
+
+    // --- ЛОГИКА ТЕКСТА ---
+    document.getElementById('main-dialogue').innerText = step.text;
+}
+
 // Запуск игры
 loadScene();
+
