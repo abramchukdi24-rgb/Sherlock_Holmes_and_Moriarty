@@ -308,5 +308,13 @@ def debug_solve_all():
     session['time_left'] = 40
     return jsonify({"status": "ok", "message": "Все задачи помечены как решенные!"})
 
+# проверка сцена 2 спасение http://127.0.0.1:5000/win1
+@app.route('/win1')
+def force_win():
+    session['task_1_solved'] = True
+    session['time_left'] = 30
+    session['game_started'] = True
+    return redirect(url_for('game_screen', scene_id=2, seconds=1800))
+
 if __name__ == '__main__':
     app.run(debug=True)

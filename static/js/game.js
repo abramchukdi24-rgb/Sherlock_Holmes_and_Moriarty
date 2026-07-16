@@ -9,6 +9,7 @@ let searchTimerInterval = null;
 let searchTimeSeconds = 0;
 
 // 1. ЗАГРУЗКА СЦЕНЫ
+// 1. УМНАЯ ЗАГРУЗКА СЦЕНЫ
 async function loadScene() {
     const urlParams = new URLSearchParams(window.location.search);
     let sceneId = urlParams.get('scene_id') || 1; 
@@ -21,9 +22,20 @@ async function loadScene() {
     const response = await fetch(`/api/scene?scene_id=${sceneId}`);
     sceneData = await response.json();
     
+    // --- ВОТ ИСПРАВЛЕНИЕ: ПРОВЕРЯЕМ, КАКОЙ БЛОК ЕСТЬ В JSON ---
+    currentStep = 0; // Всегда сбрасываем шаг в начало
+
+    if (sceneData.intro_steps && sceneData.intro_steps.length > 0) {
+        currentState = 'intro_steps';
+    } else if (sceneData.dialogue_steps && sceneData.dialogue_steps.length > 0) {
+        currentState = 'dialogue_steps';
+    } else {
+        console.error("В JSON нет ни intro_steps, ни dialogue_steps!");
+    }
+    // -------------------------------------------------------
+
     render();
 
-    // Если это "сцена результата" (2, 4, 6) и у нас еще есть время - пусть тикает
     if (sceneId % 2 === 0 && searchTimeSeconds > 0) {
         startSearchTimer(false); 
     }

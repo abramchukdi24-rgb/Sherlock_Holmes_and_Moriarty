@@ -1,6 +1,6 @@
 {
   "scene_id": 4,
-  "background": "scotland_yard_room.jpg",
+  "background": "детектвное_агенство_с_блюром_для_текста.png",
   "dialogue_steps": [
     {"text": "Как только в трубке прозвучал адрес, Лестрейд на ходу застегнул плащ и вылетел на парковку Скотленд-Ярда. Полицейский сирены разрезали ночную мглу. ", "character": null,
       "background": "london_rain_streets.jpg"},
