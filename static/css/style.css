@@ -264,20 +264,19 @@
 /* 1. ГЛАВНЫЙ КОНТЕЙНЕР (Стрелка + Кнопка) */
 .phone-trigger-wrapper {
     position: absolute !important;
-    
+
     /* КООРДИНАТЫ: подстраиваем под телефон на столе */
     /* Увеличивай эти числа, чтобы сдвинуть ВЛЕВО или ВВЕРХ */
-    bottom: 38% !important; /* Высота от нижнего края */
-    right: 1% !important;  /* Отступ от правого края */
-    
+    left: 170px; /* Фиксация на конкретные пиксели для стрелки(была изменена с right/bottom) */
+    top: -240px;
     width: 300px !important;  /* Жесткая ширина, чтобы ничего не прыгало */
     height: 200px !important; /* Жесткая высота */
-    
+
     display: flex !important;
     flex-direction: column-reverse !important; /* Кнопка строго НАД стрелкой */
     justify-content: flex-start !important;
     align-items: center !important;
-    
+
     z-index: 10000 !important;
     cursor: pointer;
 
