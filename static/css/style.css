@@ -251,5 +251,81 @@
 }
 
 /* ========================================================== */
-/* ========== толищшгощшжлшукудцпкудбжвпрпе4рно ============= */
+/* ========== стелка и кнопка для телефона ================== */
 /* ========================================================== */
+
+/* 1. АНИМАЦИЯ ПЛАВАНИЯ */
+@keyframes floatArrow {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0); }
+}
+
+/* 1. ГЛАВНЫЙ КОНТЕЙНЕР (Стрелка + Кнопка) */
+.phone-trigger-wrapper {
+    position: absolute !important;
+    
+    /* КООРДИНАТЫ: подстраиваем под телефон на столе */
+    /* Увеличивай эти числа, чтобы сдвинуть ВЛЕВО или ВВЕРХ */
+    bottom: 38% !important; /* Высота от нижнего края */
+    right: 1% !important;  /* Отступ от правого края */
+    
+    width: 300px !important;  /* Жесткая ширина, чтобы ничего не прыгало */
+    height: 200px !important; /* Жесткая высота */
+    
+    display: flex !important;
+    flex-direction: column-reverse !important; /* Кнопка строго НАД стрелкой */
+    justify-content: flex-start !important;
+    align-items: center !important;
+    
+    z-index: 10000 !important;
+    cursor: pointer;
+
+}
+
+/* 2. ТРЕУГОЛЬНИК (СТРЕЛКА) */
+.phone-arrow {
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 30px solid rgba(255, 184, 76, 0.8); /* Треугольник смотрит ВНИЗ */
+    
+    margin-top: 10px; /* Отступ от кнопки */
+    
+    animation: floatArrow 1.5s infinite ease-in-out;
+    flex-shrink: 0; /* Чтобы не сжимался */
+}
+
+/* 3. КНОПКА-ПЛАШКА */
+.phone-custom-btn {
+    /* Чтобы она не прыгала, мы её не скрываем через display, а делаем прозрачной */
+    opacity: 0; 
+    pointer-events: none; /* Пока прозрачная - нажать нельзя */
+    
+    width: 250px;
+    height: 80px;
+    background-image: url('/static/images/icons/phone_plate.png') !important;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    border: none;
+    
+    color: white;
+    font-family: 'Arcade', sans-serif;
+    font-size: 18px;
+    text-align: center;
+    text-shadow: 2px 2px 2px #000;
+    transition: 0.3s; /* Плавное появление */
+}
+
+/* 4. ЛОГИКА ПРИ НАВЕДЕНИИ */
+.phone-trigger-wrapper:hover .phone-custom-btn {
+    opacity: 1; /* Кнопка плавно проявляется */
+    pointer-events: auto; /* Теперь на неё можно нажать */
+}
+
+.phone-trigger-wrapper:hover .phone-arrow {
+    animation-play-state: paused; /* Стрелка замирает */
+}

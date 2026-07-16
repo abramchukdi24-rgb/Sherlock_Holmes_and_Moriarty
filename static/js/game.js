@@ -104,9 +104,19 @@ document.getElementById('click-overlay').addEventListener('click', () => {
 // 5. ИНТЕРФЕЙС ТЕЛЕФОНА
 function showPhoneUI() {
     const overlay = document.getElementById('choices-overlay');
-    overlay.innerHTML = `<button class="btn btn-start" style="width:400px;">${sceneData.phone_trigger.prompt}</button>`;
-    
-    overlay.querySelector('button').onclick = () => {
+    overlay.innerHTML = `
+        <div class="phone-trigger-wrapper">
+            <!-- Тот самый оранжевый треугольник -->
+            <div class="phone-arrow"></div>
+            
+            <!-- Кнопка-картинка -->
+            <button class="phone-custom-btn">
+                ${sceneData.phone_trigger.prompt}
+            </button>
+        </div>
+    `;
+
+    overlay.querySelector('.phone-custom-btn').onclick = () => {
         overlay.innerHTML = "";
         currentState = 'dialogue_steps';
         currentStep = 0;
