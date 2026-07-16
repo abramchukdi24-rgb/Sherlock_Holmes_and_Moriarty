@@ -186,6 +186,14 @@ def load_task_data(task_id):
     except FileNotFoundError:
         return None
 
+@app.route('/api/sync_time')
+def sync_time():
+    # Просто принимаем время, чтобы Питон знал остаток
+    seconds = request.args.get('seconds', type=int)
+    if seconds:
+        session['time_left'] = seconds / 60
+    return jsonify({"status": "ok"})
+
 @app.route('/api/tasks/<int:task_id>', methods=['GET'])
 def get_task(task_id):
     """
