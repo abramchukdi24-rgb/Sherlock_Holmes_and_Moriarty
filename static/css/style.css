@@ -107,11 +107,18 @@
     z-index: 1;
 }
 
-/* Персонаж слева */
 #char-img {
-    position: absolute; bottom: 0; left: 0;
-    height: 90vh; z-index: 2;
-    display: none; /* Скрыт по умолчанию */
+    position: absolute;
+    bottom: -0 !important;
+    left: -20 !important;
+    
+    height: 50vh !important; 
+    
+    width: auto; 
+    z-index: 2;
+    display: none;
+    
+    filter: none;
 }
 
 #text-layer {
@@ -123,7 +130,7 @@
     
     /* ВЫРАВНИВАНИЕ И ОТСТУП */
     text-align: left; /* Текст по левому краю */
-    padding-left: 25%; /* ОГРОМНЫЙ отступ слева (чтобы персонаж не закрывал текст) */
+    padding-left: 20%; /* ОГРОМНЫЙ отступ слева (чтобы персонаж не закрывал текст) */
     padding-right: 10%; /* Отступ справа для симметрии */
     box-sizing: border-box; /* Чтобы отступы не ломали ширину экрана */
 }
@@ -152,11 +159,22 @@
     z-index: 4; cursor: pointer;
 }
 
-/* Слой для кнопок выбора */
+/* Слой для выбора - теперь он просто прозрачный экран */
 #choices-overlay {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 5; display: flex; flex-direction: column; gap: 20px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 5;
+    /* Убираем flex и центрирование, чтобы стрелки не слипались в кучу */
+    pointer-events: none; 
+}
+
+/* Чтобы кнопки внутри всё-таки нажимались */
+#choices-overlay button, 
+#choices-overlay .phone-trigger-wrapper {
+    pointer-events: auto;
 }
 
 /* ========================================================== */
@@ -262,24 +280,38 @@
 }
 
 /* 1. ГЛАВНЫЙ КОНТЕЙНЕР (Стрелка + Кнопка) */
+/* ОБЩИЙ СТИЛЬ ДЛЯ ВСЕХ ТОЧЕК (и телефон, и поиск) */
 .phone-trigger-wrapper {
     position: absolute !important;
-
-    /* КООРДИНАТЫ: подстраиваем под телефон на столе */
-    /* Увеличивай эти числа, чтобы сдвинуть ВЛЕВО или ВВЕРХ */
-    left: 170px; /* Фиксация на конкретные пиксели для стрелки(была изменена с right/bottom) */
-    top: -240px;
-    width: 300px !important;  /* Жесткая ширина, чтобы ничего не прыгало */
-    height: 200px !important; /* Жесткая высота */
-
     display: flex !important;
-    flex-direction: column-reverse !important; /* Кнопка строго НАД стрелкой */
-    justify-content: flex-start !important;
+    flex-direction: column-reverse !important;
     align-items: center !important;
-
     z-index: 10000 !important;
     cursor: pointer;
+    /* Убираем жесткую ширину, пусть подстраивается под кнопку */
+}
 
+/* --- КООРДИНАТЫ ТЕЛЕФОНА (подбираем заново под новый экран) --- */
+.pos-phone {
+    bottom: 55% !important; /* Высота от низа */
+    right: 18% !important;  /* Отступ от правого края */
+}
+
+/* --- КООРДИНАТЫ ДЛЯ ПОИСКА (твои 3 точки) --- */
+.pos-table {
+    bottom: 50% !important;
+    left: 45% !important;
+}
+
+.pos-wardrobe {
+    top: 50% !important;
+    right: 90% !important;
+}
+
+.pos-door {
+    top: 40% !important;
+    right: 5% !important;
+    flex-direction: row-reverse !important; /* Плашка слева от стрелки */
 }
 
 /* 2. ТРЕУГОЛЬНИК (СТРЕЛКА) */
@@ -327,4 +359,50 @@
 
 .phone-trigger-wrapper:hover .phone-arrow {
     animation-play-state: paused; /* Стрелка замирает */
+}
+
+
+/* ========================================================== */
+/* ========== стелки и кнопка для поиска зацепок============= */
+/* ========================================================== */
+
+.arrow-right {
+    width: 0;
+    height: 0;
+    /* Рисуем треугольник, смотрящий вправо */
+    border-top: 20px solid transparent !important;
+    border-bottom: 20px solid transparent !important;
+    border-left: 30px solid rgba(255, 184, 76, 0.8) !important;
+    border-right: none !important;
+    
+    margin-left: 10px;
+    animation: floatArrowRight 1.5s infinite ease-in-out !important;
+}
+
+/* Анимация для стрелки вправо (влево-вправо) */
+@keyframes floatArrowRight {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(15px); }
+    100% { transform: translateX(0); }
+}
+
+/* --- ПОЗИЦИИ ДЛЯ ТРЕХ ТОЧЕК (Настрой под свою картинку) --- */
+
+/* 1. Стол (Table) */
+.pos-table {
+    top: 55% !important;
+    left: 40% !important;
+}
+
+/* 2. Шкаф (Wardrobe) */
+.pos-wardrobe {
+    top: 30% !important;
+    right: 15% !important;
+}
+
+/* 3. Дверь (Door) - тут используем стрелку направо */
+.pos-door {
+    top: 45% !important;
+    left: 10% !important;
+    flex-direction: row-reverse !important; /* Плашка будет слева от стрелки */
 }

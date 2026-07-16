@@ -105,11 +105,9 @@ document.getElementById('click-overlay').addEventListener('click', () => {
 function showPhoneUI() {
     const overlay = document.getElementById('choices-overlay');
     overlay.innerHTML = `
-        <div class="phone-trigger-wrapper">
-            <!-- Тот самый оранжевый треугольник -->
+        <!-- Добавляем специальный класс pos-phone -->
+        <div class="phone-trigger-wrapper pos-phone">
             <div class="phone-arrow"></div>
-            
-            <!-- Кнопка-картинка -->
             <button class="phone-custom-btn">
                 ${sceneData.phone_trigger.prompt}
             </button>
@@ -144,4 +142,59 @@ function showChoicesUI() {
     });
 }
 
+function showChoicesUI() {
+    const overlay = document.getElementById('choices-overlay');
+    overlay.innerHTML = ""; // Очищаем
+
+    sceneData.search_interact.choices.forEach(choice => {
+        // Создаем обертку для каждой интерактивной точки
+        const wrapper = document.createElement('div');
+        
+        // Даем ей класс враппера + уникальный класс для позиции (например, pos-table)
+        wrapper.className = `phone-trigger-wrapper pos-${choice.id}`;
+        
+        // Определяем тип стрелки (для двери - вправо, для остальных - вниз)
+        const arrowClass = (choice.id === 'door') ? 'phone-arrow arrow-right' : 'phone-arrow';
+
+        wrapper.innerHTML = `
+            <div class="${arrowClass}"></div>
+            <button class="phone-custom-btn">${choice.text}</button>
+        `;
+
+        // Клик отправляет выбор на бэк
+        wrapper.querySelector('.phone-custom-btn').onclick = () => {
+            handleSearchAction(choice.id);
+        };
+
+        overlay.appendChild(wrapper);
+    });
+}
+
+
+// Функция для отправки действия на сервер
+async function handleSearchAction(actionId) {
+    const response = await fetch('/api/game/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action_id: actionId })
+    });
+    
+    const result = await response.json();
+
+    // Если всё правильно (is_win: true)
+    if (result.status === 'win') {
+        alert("Успех! " + result.text);
+        // Тут можно переходить к следующей сцене или задаче
+    } else {
+        // Если ошибка — выводим текст результата и обновляем время
+        alert(result.text + "\nОсталось времени: " + result.time_left + " мин.");
+        
+        // Обновляем таймер на экране 
+        if(document.getElementById('timer')) {
+            document.getElementById('timer').innerText = `Время: ${result.time_left} мин`;
+        }
+    }
+}
+
 loadScene();
+
