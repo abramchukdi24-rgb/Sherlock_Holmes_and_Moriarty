@@ -9,7 +9,6 @@ async function startTask() {
     taskData = await response.json();
     replacements = taskData.current_replacements || {};
 
-    // ЛОГИКА ПРИЕМКИ ВРЕМЕНИ ИЗ ПРЕДЫДУЩЕГО ОКНА
     const urlParams = new URLSearchParams(window.location.search);
     let secondsFromUrl = urlParams.get('seconds');
 
@@ -34,8 +33,7 @@ function startTimer() {
             updateTimerDisplay();
         } else {
             clearInterval(timerInterval);
-            alert("Время вышло!");
-            window.location.href = '/game'; 
+            window.location.href = '/game?scene_id=2&seconds=0'; 
         }
     }, 1000);
 }
@@ -82,7 +80,6 @@ function renderDecodedText() {
     display.innerHTML = newText;
 }
 
-// График
 let chartInstance = null;
 const russianFreq = { 'о': 10.9, 'е': 8.4, 'а': 8.0, 'и': 7.3, 'н': 6.7, 'т': 6.2, 'с': 5.4, 'р': 4.7 }; 
 function updateChart() {
@@ -99,7 +96,6 @@ function updateChart() {
 }
 document.getElementById('switch-chart-btn').onclick = () => { isNormalFreq = !isNormalFreq; updateChart(); };
 
-// ОТПРАВКА
 document.getElementById('submit-btn').onclick = async () => {
     const res = await fetch('/api/tasks/submit', {
         method: 'POST',
@@ -110,25 +106,21 @@ document.getElementById('submit-btn').onclick = async () => {
     
     if (result.status === 'success') {
         clearInterval(timerInterval);
-        // Тут тоже убираем лишнее слово "Лестрейд", если оно есть в message
-        document.getElementById('lestrade-text').innerText = result.message; 
-        setTimeout(() => { window.location.href = `/game?scene_id=3&seconds=${timeRemainingSeconds}`; }, 2000);
+        window.location.href = `/game?scene_id=2&seconds=${timeRemainingSeconds}`; 
     } else {
         const penaltyPopup = document.getElementById('penalty-popup');
-        penaltyPopup.innerText = "-10:00 MIN";
-        
-        // ВКЛЮЧАЕМ КРАСИВУЮ АНИМАЦИЮ
-        penaltyPopup.classList.remove('penalty-animation');
-        void penaltyPopup.offsetWidth;
-        penaltyPopup.classList.add('penalty-animation');
-
+        if (penaltyPopup) {
+            penaltyPopup.innerText = "-10:00 MIN";
+            penaltyPopup.classList.add('penalty-animation');
+            setTimeout(() => penaltyPopup.classList.remove('penalty-animation'), 2000);
+        }
         timeRemainingSeconds = Math.max(0, timeRemainingSeconds - 600);
         updateTimerDisplay();
-
-        // УБИРАЕМ ЛИШНЕЕ СЛОВО ТУТ
         document.getElementById('lestrade-text').innerText = result.message;
         
-        setTimeout(() => { penaltyPopup.classList.remove('penalty-animation'); }, 2000);
+        if (timeRemainingSeconds <= 0) {
+            window.location.href = `/game?scene_id=2&seconds=0`;
+        }
     }
 };
 
