@@ -424,17 +424,46 @@
     font-family: 'Arcade', sans-serif !important; /* Твой шрифт сохранен */
 }
 
-/* --- ТАЙМЕР (По центру сверху) --- */
-#task-timer-block {
+/* ОБЩИЙ СТИЛЬ ТАЙМЕРА ДЛЯ ВСЕХ СТРАНИЦ */
+#search-timer-block, #task-timer-block {
     position: absolute;
-    top: 20px;
+    top: 30px; 
     left: 50%;
-    transform: translateX(-50%); /* Центрирует элемент по оси X */
-    font-size: 36px;
-    color: red;
-    text-shadow: 2px 2px 0 #000;
-    z-index: 10;
+    transform: translateX(-50%);
+    font-size: 42px; /* Крупно */
+    color: #ff0000; /* Ярко-красный */
+    text-shadow: 3px 3px 0 #000;
+    z-index: 10000;
+    font-family: 'Arcade', sans-serif !important;
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
+
+/* СТИЛЬ ДЛЯ ВСПЛЫВАЮЩЕГО ШТРАФА */
+#game-penalty-popup, #penalty-popup {
+    color: #ff4444;
+    font-size: 32px;
+    font-weight: bold;
+    display: none; /* Скрыт по умолчанию */
+}
+
+/* --- ВСПЛЫВАЮЩИЙ ШТРАФ --- */
+#penalty-popup {
+    color: #ff3333;
+    font-size: 36px;
+    text-shadow: 2px 2px 0 #000;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease-out;
+}
+
+#penalty-popup.show-penalty {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.hidden { display: none !important; }
 
 /* КНИГА */
 #task-container {
@@ -574,4 +603,12 @@
 
 .btn-task:active {
     transform: translateY(2px); /* При клике чуть дергается вниз */
+}
+
+
+
+#game-penalty-popup {
+    display: none;
+    color: #ff3333; 
+    margin-left: 20px;
 }

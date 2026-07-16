@@ -94,7 +94,7 @@ document.getElementById('switch-chart-btn').onclick = () => {
     updateChart();
 };
 
-// Отправка ответа
+// При сдаче ответа в книге
 document.getElementById('submit-btn').onclick = async () => {
     const res = await fetch('/api/tasks/submit', {
         method: 'POST',
@@ -104,15 +104,70 @@ document.getElementById('submit-btn').onclick = async () => {
     const result = await res.json();
     
     if (result.status === 'success') {
-        alert("Правильно! Награда: " + result.message);
-        window.location.href = '/game'; // Возвращаемся в игру к сцене 2
+        clearInterval(timerInterval);
+        // Вместо алерта можно написать текст Лестрейду
+        document.getElementById('lestrade-text').innerText = "Лестрейд: Отлично! Мы разгадали это. Едем дальше!";
+        setTimeout(() => { window.location.href = '/game?scene_id=3'; }, 2000);
     } else {
-        // Показываем штраф
-        const penalty = document.getElementById('penalty-popup');
-        penalty.classList.remove('hidden');
-        setTimeout(() => penalty.classList.add('hidden'), 2000);
-        alert("Ошибка! " + result.message);
+        // ШТРАФ В КНИГЕ
+        const penaltyPopup = document.getElementById('penalty-popup');
+        penaltyPopup.innerText = "-10:00 MIN";
+        penaltyPopup.style.display = 'inline';
+        
+        // Отнимаем время
+        timeRemainingSeconds = Math.max(0, timeRemainingSeconds - 600);
+        updateTimerDisplay();
+
+        document.getElementById('lestrade-text').innerText = "Лестрейд: " + result.message;
+        
+        setTimeout(() => { penaltyPopup.style.display = 'none'; }, 2000);
     }
 };
+// --- ЛОГИКА ТИКАЮЩЕГО ТАЙМЕРА ---
+function startTimer() {
+    // ЖЕСТКАЯ ПРОВЕРКА: Если бэкэнд не прислал время, ставим 40 минут по умолчанию
+    let minutesFromBackend = taskData.current_time_left;
+    if (minutesFromBackend === undefined || minutesFromBackend === null) {
+        minutesFromBackend = 40; 
+        console.error("Бэкэнд не прислал время, поставили 40 минут!");
+    }
+    
+    // Переводим минуты в секунды
+    timeRemainingSeconds = minutesFromBackend * 60;
+    
+    // Показываем таймер на экране СРАЗУ
+    updateTimerDisplay(); 
+    
+    // Запускаем бесконечный цикл, который срабатывает каждые 1000 миллисекунд (1 секунду)
+    timerInterval = setInterval(() => {
+        if (timeRemainingSeconds > 0) {
+            // Отнимаем 1 секунду
+            timeRemainingSeconds--;
+            
+            // Обновляем цифры на экране
+            updateTimerDisplay();
+        } else {
+            // КОГДА ВРЕМЯ ВЫШЛО
+            clearInterval(timerInterval); // Останавливаем тиканье
+            alert("Время вышло! Скотленд-Ярд скорбит...");
+            
+            // Перекидываем на сцену смерти (у тебя это четные сцены, например scene_2_death.json)
+            // Важно: в твоем app.py выдача сцен работает через /game, а не напрямую!
+            window.location.href = '/game'; 
+        }
+    }, 1000); 
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeRemainingSeconds / 60);
+    let seconds = timeRemainingSeconds % 60;
+    if (seconds < 10) seconds = '0' + seconds;
+    
+    // Ищем элемент именно по этому ID
+    const timerElem = document.getElementById('timer-display');
+    if (timerElem) {
+        timerElem.innerText = `${minutes}:${seconds}`;
+    }
+}
 
 startTask();

@@ -14,7 +14,6 @@
         <!-- 2. Персонаж -->
         <img id="char-img" src="" alt="">
 
-        <!-- 3. Твоё UI-меню из index.html (перенесли сюда) -->
         <div id="UI-menu">
             <button type="button" id="rules-btn" title="Правила">
                 <img src="{{ url_for('static', filename='images/icons/rules.png') }}" alt="?">
@@ -27,6 +26,11 @@
             </button> 
         </div>
 
+        <div id="search-timer-block" style="display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 36px; color: red; text-shadow: 2px 2px 0 #000; z-index: 10000; font-family: 'Arcade Gamer', sans-serif;">
+            <span id="game-timer-display">40:00</span>
+            <span id="game-penalty-popup" style="display: none; color: #ff3333; margin-left: 20px;">-5:00 MIN</span>
+        </div>
+        
         <!-- 4. Текст (только тени, как ты просила) -->
         <div id="text-layer">
             <p id="main-dialogue"></p>
