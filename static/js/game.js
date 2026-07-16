@@ -159,13 +159,19 @@ async function handleSearchAction(actionId) {
         // ПЕРЕДАЕМ ВРЕМЯ В СЛЕДУЮЩИЙ ФАЙЛ
         window.location.href = `/tasks?seconds=${searchTimeSeconds}`; 
     } else {
-        document.getElementById('main-dialogue').innerText = result.text;
-        // ШТРАФ 5 МИНУТ
+         document.getElementById('main-dialogue').innerText = result.text; 
+
         searchTimeSeconds = Math.max(0, searchTimeSeconds - 300);
         updateSearchTimerDisplay();
+
+        // ВКЛЮЧАЕМ КРАСИВУЮ АНИМАЦИЮ ШТРАФА
         const penalty = document.getElementById('game-penalty-popup');
-        penalty.style.display = 'inline';
-        setTimeout(() => { penalty.style.display = 'none'; }, 2000);
+        penalty.innerText = "-5:00 MIN";
+        penalty.classList.remove('penalty-animation'); // Сброс
+        void penalty.offsetWidth; // Магия для перезапуска анимации
+        penalty.classList.add('penalty-animation');
+        
+        setTimeout(() => { penalty.classList.remove('penalty-animation'); }, 2000);
     }
 }
 

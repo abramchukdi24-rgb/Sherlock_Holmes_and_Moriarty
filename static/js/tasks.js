@@ -110,17 +110,25 @@ document.getElementById('submit-btn').onclick = async () => {
     
     if (result.status === 'success') {
         clearInterval(timerInterval);
-        // После успеха переходим к следующей сцене, передав время дальше
-        window.location.href = `/game?scene_id=3&seconds=${timeRemainingSeconds}`; 
+        // Тут тоже убираем лишнее слово "Лестрейд", если оно есть в message
+        document.getElementById('lestrade-text').innerText = result.message; 
+        setTimeout(() => { window.location.href = `/game?scene_id=3&seconds=${timeRemainingSeconds}`; }, 2000);
     } else {
         const penaltyPopup = document.getElementById('penalty-popup');
         penaltyPopup.innerText = "-10:00 MIN";
-        penaltyPopup.style.display = 'inline';
-        // ШТРАФ 10 МИНУТ
+        
+        // ВКЛЮЧАЕМ КРАСИВУЮ АНИМАЦИЮ
+        penaltyPopup.classList.remove('penalty-animation');
+        void penaltyPopup.offsetWidth;
+        penaltyPopup.classList.add('penalty-animation');
+
         timeRemainingSeconds = Math.max(0, timeRemainingSeconds - 600);
         updateTimerDisplay();
-        document.getElementById('lestrade-text').innerText = "Лестрейд: " + result.message;
-        setTimeout(() => { penaltyPopup.style.display = 'none'; }, 2000);
+
+        // УБИРАЕМ ЛИШНЕЕ СЛОВО ТУТ
+        document.getElementById('lestrade-text').innerText = result.message;
+        
+        setTimeout(() => { penaltyPopup.classList.remove('penalty-animation'); }, 2000);
     }
 };
 

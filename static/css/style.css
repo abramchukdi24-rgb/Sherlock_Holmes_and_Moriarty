@@ -427,7 +427,7 @@
 /* ОБЩИЙ СТИЛЬ ТАЙМЕРА ДЛЯ ВСЕХ СТРАНИЦ */
 #search-timer-block, #task-timer-block {
     position: absolute;
-    top: 30px; 
+    top: 15px; 
     left: 50%;
     transform: translateX(-50%);
     font-size: 42px; /* Крупно */
@@ -611,4 +611,31 @@
     display: none;
     color: #ff3333; 
     margin-left: 20px;
+}
+
+/* Анимация для штрафа */
+@keyframes penaltySlide {
+    0% {
+        opacity: 0;
+        transform: translateX(40px); /* Появляется правее */
+    }
+    20% {
+        opacity: 1;
+        transform: translateX(20px); /* Становится ярким */
+    }
+    80% {
+        opacity: 1;
+        transform: translateX(0px);  /* Плывет к таймеру */
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-20px); /* Улетает влево и гаснет */
+    }
+}
+
+.penalty-animation {
+    display: inline-block !important;
+    animation: penaltySlide 2s ease-out forwards;
+    color: #ff0000;
+    font-weight: bold;
 }
