@@ -3,10 +3,12 @@ from flask import session, jsonify
 
 
 # В game_logic.py обновляем функцию
-def inject_dynamic_notification(scene_data, current_scene):
+def inject_dynamic_notification(scene_data):
     # Вычисляем номер текущей задачи
-    task_number = current_scene // 2 if current_scene % 2 == 0 else (current_scene // 2) + 1
-    hints_used = session.get(f'task_{task_number}_hints_used', 0)
+    clues_found = sum(
+        1 for i in range(1, 4)
+        if session.get(f"task_{i}_solved", False)
+    )
 
     # Массив уведомлений (можно расширять)
     notifications = {
@@ -14,9 +16,8 @@ def inject_dynamic_notification(scene_data, current_scene):
         2: "[Системное уведомление: Похоже, вас ожидают]",
         3: "[Системное уведомление: Он оставил слишком много]"
     }
-    notification_text = notifications.get(hints_used,"[Системное уведомление: Он оставил слишком много]" if hints_used >= 3 else None)
 
-    scene_data["system_notification"] = notification_text
+    scene_data["system_notification"] = notifications.get(clues_found)
     return scene_data
 
 def apply_penalty(penalty_minutes, current_scene_id, action_id=None):

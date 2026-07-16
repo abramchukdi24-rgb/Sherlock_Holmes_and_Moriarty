@@ -137,7 +137,7 @@ def get_scene_data():
         scene_data["current_time_left"] = session['time_left']
 
         # 3. Добавляем системные уведомления
-        scene_data = inject_dynamic_notification(scene_data, current_scene)
+        scene_data = inject_dynamic_notification(scene_data)
 
         return jsonify(scene_data)
     except FileNotFoundError:
