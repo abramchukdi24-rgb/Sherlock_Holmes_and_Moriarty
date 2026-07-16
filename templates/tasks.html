@@ -4,44 +4,50 @@
     <meta charset="UTF-8">
     <title>Дешифровка - Детективчик</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- Библиотека для графиков -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="task-body">
 
-    <div id="task-container">
-        <!-- Таймер -->
-        <div id="task-timer-block">
-            <span id="timer-display">40:00</span>
-            <span id="penalty-popup" class="hidden">-10:00 MIN</span>
-        </div>
+    <!-- ТАЙМЕР -->
+    <div id="task-timer-block">
+        <span id="timer-display">40:00</span>
+        <span id="penalty-popup" class="hidden">-10:00 MIN</span>
+    </div>
 
+    <!-- КНИГА -->
+    <div id="task-container">
         <div class="book-wrapper">
-            <!-- ЛЕВАЯ СТРАНИЦА: Шифр и Замены -->
+            
+            <!-- === ЛЕВАЯ СТРАНИЦА === -->
             <div class="page left-page">
-                <div id="cipher-area">
-                    <div id="cipher-text-scroll">
-                        <p id="decoded-display"></p>
-                    </div>
+                <!-- ВЕРХ: Текст шифра (только он скроллится, если текста много) -->
+                <div id="cipher-text-scroll">
+                    <p id="decoded-display">Загрузка шифра...</p>
                 </div>
                 
+                <!-- НИЗ: Сетка замен -->
                 <div id="inputs-grid">
-                    <!-- Сюда JS вставит пары X -> Y -->
+                    <!-- Сюда JS добавит инпуты -->
                 </div>
             </div>
 
-            <!-- ПРАВАЯ СТРАНИЦА: График и Подсказки -->
+            <!-- === ПРАВАЯ СТРАНИЦА === -->
             <div class="page right-page">
+                <!-- ВЕРХ: График и кнопка -->
                 <div class="chart-container">
-                    <button id="switch-chart-btn">ПЕРЕВЕРНУТЬ СТРАНИЦУ</button>
-                    <canvas id="freq-chart"></canvas>
+                    <button id="switch-chart-btn" class="btn-task btn-orange">ПЕРЕВЕРНУТЬ СТРАНИЦУ</button>
+                    <div class="canvas-wrapper">
+                        <canvas id="freq-chart"></canvas>
+                    </div>
                 </div>
 
+                <!-- НИЗ: Лестрейд и сдача -->
                 <div class="lestrade-box">
-                    <p id="lestrade-text"></p>
-                    <button id="submit-btn">СДАТЬ ОТВЕТ</button>
+                    <p id="lestrade-text">Изучаю улики...</p>
+                    <button id="submit-btn" class="btn-task btn-orange">СДАТЬ ОТВЕТ</button>
                 </div>
             </div>
+
         </div>
     </div>
 
