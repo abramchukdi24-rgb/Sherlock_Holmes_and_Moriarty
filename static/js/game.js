@@ -181,18 +181,10 @@ async function handleSearchAction(actionId) {
     
     const result = await response.json();
 
-    // Если всё правильно (is_win: true)
     if (result.status === 'win') {
-        alert("Успех! " + result.text);
-        // Тут можно переходить к следующей сцене или задаче
+        window.location.href = '/tasks'; 
     } else {
-        // Если ошибка — выводим текст результата и обновляем время
-        alert(result.text + "\nОсталось времени: " + result.time_left + " мин.");
-        
-        // Обновляем таймер на экране 
-        if(document.getElementById('timer')) {
-            document.getElementById('timer').innerText = `Время: ${result.time_left} мин`;
-        }
+        alert(result.text + "\nШтраф! Осталось времени: " + result.time_left);
     }
 }
 

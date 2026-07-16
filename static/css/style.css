@@ -97,7 +97,7 @@
 /* ========================================================== */
 
 
-.game-body { margin: 0; background: #000; overflow: hidden; font-family: 'Arcade Gamer', sans-serif; }
+.game-body { margin: 0; background: #000; overflow: hidden; font-family: 'Arcade', sans-serif; }
 
 #game-screen { position: relative; width: 100vw; height: 100vh; }
 
@@ -406,3 +406,55 @@
     left: 10% !important;
     flex-direction: row-reverse !important; /* Плашка будет слева от стрелки */
 }
+
+
+
+/* ========================================================== */
+/* ========== первое задание книга, буквы       ============= */
+/* ========================================================== */
+
+.task-body { background-image: url('../images/backgrounds/детективное_агенство_полностью_размыто_для_системного_уведомления.jpg'); display: flex; justify-content: center; align-items: center; height: 100vh; }
+
+#task-container {
+    width: 1000px; height: 700px;
+    background-color : #dec176 ;  /* Твоя картинка книги */
+    background-size: 100% 100%;
+    position: relative; padding: 50px;
+}
+
+.book-wrapper { display: flex; height: 100%; }
+.page { width: 50%; padding: 20px; display: flex; flex-direction: column; }
+
+/* Скролл для текста */
+#cipher-text-scroll {
+    height: 280px; overflow-y: auto;
+    padding: 10px; border: 1px solid #4a3621;
+    background: rgba(255,255,255,0.2);
+}
+
+/* Красивый скроллбар */
+#cipher-text-scroll::-webkit-scrollbar { width: 8px; }
+#cipher-text-scroll::-webkit-scrollbar-thumb { background: #4a3621; border-radius: 4px; }
+
+#decoded-display { font-size: 18px; color: #2e1a05; line-height: 1.4; word-break: break-all; }
+
+/* Цвет замененных букв */
+.highlight-replace { color: #d35400; font-weight: bold; }
+
+/* Сетка инпутов */
+#inputs-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-top: 20px;
+    overflow-y: auto; height: 200px;
+}
+
+.input-pair { display: flex; align-items: center; color: #2e1a05; font-size: 18px; }
+.y-input {
+    width: 35px; height: 35px; margin-left: 10px;
+    text-align: center; background: #fff; border: 2px solid #4a3621;
+    font-family: 'Arcade', sans-serif; font-size: 20px;
+}
+
+/* Таймер */
+#task-timer-block { position: absolute; top: 10px; left: 50px; font-size: 30px; color: red; }
+.hidden { display: none; }

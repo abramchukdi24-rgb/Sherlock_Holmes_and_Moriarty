@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Дешифровка - Детективчик</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Библиотека для графиков -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="task-body">
+
+    <div id="task-container">
+        <!-- Таймер -->
+        <div id="task-timer-block">
+            <span id="timer-display">40:00</span>
+            <span id="penalty-popup" class="hidden">-10:00 MIN</span>
+        </div>
+
+        <div class="book-wrapper">
+            <!-- ЛЕВАЯ СТРАНИЦА: Шифр и Замены -->
+            <div class="page left-page">
+                <div id="cipher-area">
+                    <div id="cipher-text-scroll">
+                        <p id="decoded-display"></p>
+                    </div>
+                </div>
+                
+                <div id="inputs-grid">
+                    <!-- Сюда JS вставит пары X -> Y -->
+                </div>
+            </div>
+
+            <!-- ПРАВАЯ СТРАНИЦА: График и Подсказки -->
+            <div class="page right-page">
+                <div class="chart-container">
+                    <button id="switch-chart-btn">ПЕРЕВЕРНУТЬ СТРАНИЦУ</button>
+                    <canvas id="freq-chart"></canvas>
+                </div>
+
+                <div class="lestrade-box">
+                    <p id="lestrade-text"></p>
+                    <button id="submit-btn">СДАТЬ ОТВЕТ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+</body>
+</html>
