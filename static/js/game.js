@@ -198,35 +198,44 @@ async function handleSearchAction(actionId) {
     });
     const result = await response.json();
     
-    // 1. Убираем стрелки СРАЗУ, чтобы они не висели в допросной
+    // 1. СРАЗУ очищаем экран от стрелок и "забываем" про интерактив
     document.getElementById('choices-overlay').innerHTML = "";
+    sceneData.search_interact = null;
+    sceneData.final_choice_interact = null;
 
-    // 2. Обновляем время (чтобы штраф 10 минут за курьера отобразился)
-    if (result.time_left !== undefined) {
-        searchTimeSeconds = result.time_left * 60;
-        updateSearchTimerDisplay();
-    }
-
-    // 3. Если выбрали "Вскрыть конверт" (win)
-    if (result.status === 'win') { 
-        clearInterval(searchTimerInterval);
-        // Переходим к заданию (номер задания определится в handleEndOfScene)
-        handleEndOfScene(); 
+    // 2. Если бэкенд запустил ФИНАЛЬНЫЙ ПАЗЛ (Сцена 7)
+    if (result.status === 'start_final_puzzle') {
+        // Показываем текст, который идет ПЕРЕД вводом слова
+        if (result.dialogue_step) {
+            typeWriter(result.dialogue_step.text);
+        }
+        // Запускаем окно ввода "МОРИАРТИ" через 2 секунды
+        setTimeout(() => {
+            startFinalPuzzle(result.puzzle_config);
+        }, 2000);
     } 
-    // 4. Если выбрали "Допрос" (пришел новый текст)
+    // 3. Если это обычный конец игры (титры/уход)
+    else if (result.status === 'game_over_credits') {
+        if (result.dialogue_step) {
+            typeWriter(result.dialogue_step.text);
+        }
+        setTimeout(() => { window.location.href = '/'; }, 8000);
+    }
+    // 4. Обычная победа в поиске (Сцены 1, 5)
+    else if (result.status === 'win') {
+        clearInterval(searchTimerInterval);
+        handleEndOfScene();
+    }
+    // 5. Если пришел диалог (Сцена 5 допрос)
     else if (result.dialogue_steps && result.dialogue_steps.length > 0) {
-        // ВАЖНО: Удаляем поиск из данных, чтобы стрелки больше не появлялись!
-        sceneData.search_interact = null; 
-
         currentState = 'dialogue_steps';
         currentStep = 0;
         sceneData.dialogue_steps = result.dialogue_steps; 
-
         render(); 
     }
-    // 5. Обычная ошибка (как в 1 сцене)
+    // 6. Любой другой текст
     else {
-        document.getElementById('main-dialogue').innerText = result.text;
+        document.getElementById('main-dialogue').innerText = result.text || "Ничего не произошло.";
     }
 }
 

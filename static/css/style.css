@@ -741,3 +741,19 @@
     top: 40% !important;
     right: 20% !important; /* Правая часть */
 }
+
+/* --- СЦЕНА 7: Финальный выбор --- */
+
+/* Позиция для "Пройти мимо" */
+.pos-go_away {
+    position: absolute !important;
+    top: 30% !important;
+    left: 20% !important;
+}
+
+/* Позиция для "Поднять карточку" (указывает на асфальт) */
+.pos-pick_card {
+    position: absolute !important;
+    bottom: 20% !important;
+    right: 25% !important;
+}
