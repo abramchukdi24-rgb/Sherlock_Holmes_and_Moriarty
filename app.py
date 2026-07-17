@@ -50,6 +50,10 @@ def menu():
         game_started=game_started,
         sound_enabled=sound_enabled)
 
+@app.route('/game')
+def game_screen():
+    """Этот роут просто открывает файл с дизайном игры"""
+    return render_template('game.html')
 
 @app.route('/start')
 def start_game():
@@ -61,7 +65,7 @@ def start_game():
     for task_id in [1, 2, 3]:
         session[f"task_{task_id}_replacements"] = {}
         session[f"task_{task_id}_solved"] = False
-    return redirect(url_for('get_scene_data'))
+    return redirect(url_for('game_screen'))
 
 
 @app.route('/continue')
@@ -69,7 +73,7 @@ def continue_game():
     """Продолжение игры с сохраненного места"""
     if not session.get('game_started'):
         return redirect(url_for('menu'))
-    return redirect(url_for('get_scene_data'))
+    return redirect(url_for('game_screen'))
 
 @app.route('/save_and_exit')
 def save_and_exit():                     #роут для выхода из игрового процесса
@@ -182,6 +186,14 @@ def load_task_data(task_id):
     except FileNotFoundError:
         return None
 
+@app.route('/api/sync_time')
+def sync_time():
+    # Просто принимаем время, чтобы Питон знал остаток
+    seconds = request.args.get('seconds', type=int)
+    if seconds:
+        session['time_left'] = seconds / 60
+    return jsonify({"status": "ok"})
+
 @app.route('/api/tasks/<int:task_id>', methods=['GET'])
 def get_task(task_id):
     """
@@ -191,23 +203,32 @@ def get_task(task_id):
     if not task_data:
         return jsonify({"error": f"Задача {task_id} не найдена"}), 404
 
+    # --- ИСПРАВЛЕНИЕ: БЕРЕМ ВРЕМЯ ИЗ ЗАПРОСА ---
+    # Фронт теперь будет присылать ?seconds=...
+    seconds_from_js = request.args.get('seconds', type=int)
+    
+    if seconds_from_js is not None:
+        # Если время пришло, обновляем его в сессии
+        session['time_left'] = seconds_from_js / 60
+    
+    # --------------------------------------------
+
     # Вытаскиваем динамические данные из сессии
     replacements_key = f"task_{task_id}_replacements"
     if replacements_key not in session:
         session[replacements_key] = {}
 
     current_replacements = session[replacements_key]
-    time_left = session.get('time_left')
+    
+    # Теперь берем время из обновленной сессии
+    time_left = session.get('time_left', 40)
 
-    # Применяем замены к шифртексту + частотный анализ
+    # ... (дальше твой код без изменений) ...
     ciphertext = task_data["ciphertext"]
     decoded_text = apply_letter_replacements(ciphertext, current_replacements)
     freq = calculate_frequency(ciphertext)
-
-    # Считаем процент выполнения
     completion = calculate_completion_percentage(ciphertext, current_replacements)
 
-    # Собираем ответ для фронтенда
     response_data = {
         "task_id": task_data["task_id"],
         "intro_slides": task_data.get("intro_slides", []),
@@ -216,7 +237,7 @@ def get_task(task_id):
         "decoded_text": decoded_text,
         "frequencies": freq,
         "current_replacements": current_replacements,
-        "current_time_left": time_left,
+        "current_time_left": time_left, # Теперь это время актуальное
         "completion_percentage": completion
     }
     return jsonify(response_data)
@@ -295,6 +316,14 @@ def debug_solve_all():
     session['task_3_solved'] = True
     session['time_left'] = 40
     return jsonify({"status": "ok", "message": "Все задачи помечены как решенные!"})
+
+# проверка сцена 2 спасение http://127.0.0.1:5000/win1
+@app.route('/win1')
+def force_win():
+    session['task_1_solved'] = True
+    session['time_left'] = 30
+    session['game_started'] = True
+    return redirect(url_for('game_screen', scene_id=2, seconds=1800))
 
 if __name__ == '__main__':
     app.run(debug=True)

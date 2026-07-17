@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Дешифровка - Детективчик</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="task-body">
+
+    <!-- 1. ТАЙМЕР (Должен быть ТУТ) -->
+    <div id="task-timer-block">
+        <span id="timer-display">40:00</span>
+        <span id="penalty-popup"></span>
+    </div>
+
+    <div id="task-container">
+        <div class="book-wrapper">
+            <div class="page left-page">
+                <div id="cipher-text-scroll">
+                    <p id="decoded-display">Загрузка шифра...</p>
+                </div>
+                <div id="inputs-grid"></div>
+            </div>
+
+            <div class="page right-page">
+                <div class="chart-container">
+                    <button id="switch-chart-btn" class="btn-task">ПЕРЕВЕРНУТЬ СТРАНИЦУ</button>
+                    <div class="canvas-wrapper">
+                        <canvas id="freq-chart"></canvas>
+                    </div>
+                </div>
+                <div class="lestrade-box">
+                    <p id="lestrade-text">Изучаю улики...</p>
+                    <button id="scytale-btn" class="btn-task" style="display: none;">ПРИМЕНИТЬ СКИТАЛА</button>
+                    <button id="cancel-scytala-btn" class="btn-task" style="display:none;">ОТМЕНИТЬ СКИТАЛУ</button>
+                    <button id="submit-btn" class="btn-task">СДАТЬ ОТВЕТ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. СИСТЕМНОЕ УВЕДОМЛЕНИЕ (ОБЯЗАТЕЛЬНО ДОЛЖНО БЫТЬ ТУТ) -->
+    <div id="system-notification" class="notification-overlay" style="display: none;">
+        <div class="notification-content">
+            <h2 class="notification-title">СИСТЕМНОЕ УВЕДОМЛЕНИЕ</h2>
+            <div class="notification-paper">
+                <p id="notification-text"></p>
+            </div>
+            <button id="close-notification" class="btn-task">ПОНЯТНО</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+</body>
+</html>

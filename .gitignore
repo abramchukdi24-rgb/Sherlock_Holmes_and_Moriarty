@@ -1,18 +1,1 @@
-# Окружение
-.venv/
-venv/
-ENV/
-
-# Кэш
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# PyCharm
-.idea/
-.vscode/
-
-# Windows
-.DS_Store
-Thumbs.db

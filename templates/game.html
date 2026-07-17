@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Детективчик</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="game-body">
+
+    <div id="game-screen">
+        <!-- 1. Фон -->
+        <div id="bg-layer"></div>
+
+        <!-- 2. Персонаж -->
+        <img id="char-img" src="" alt="">
+
+        <div id="UI-menu">
+            <button type="button" id="rules-btn" title="Правила">
+                <img src="{{ url_for('static', filename='images/icons/rules.png') }}" alt="?">
+            </button> 
+            <button type="button" id="mute-btn" title="Звук">
+                <img src="{{ url_for('static', filename='images/icons/sound_on.png') }}" alt="S">
+            </button> 
+            <button type="button" id="exit-btn" title="Выход">
+                <img src="{{ url_for('static', filename='images/icons/exit.png') }}" alt="X">
+            </button> 
+        </div>
+
+        <div id="search-timer-block">
+            <span id="game-timer-display">40:00</span>
+            <span id="game-penalty-popup" style="display: none; color: #ff3333; margin-left: 20px;">-5:00 MIN</span>
+        </div>
+
+        <!-- 4. Текст (только тени, как ты просила) -->
+        <div id="text-layer">
+            <p id="main-dialogue"></p>
+        </div>
+
+        <!-- 5. Слой для клика (чтобы листать текст) -->
+        <div id="click-overlay"></div>
+        
+        <!-- 6. Слой для кнопок выбора (появятся в конце) -->
+        <div id="choices-overlay"></div>
+    </div>
+
+     <div id="system-notification" class="notification-overlay" style="display: none;">
+        <div class="notification-content">
+            <h2 class="notification-title">СИСТЕМНОЕ УВЕДОМЛЕНИЕ</h2>
+            <div class="notification-paper">
+                <p id="notification-text"></p>
+            </div>
+            <button id="close-notification" class="btn-task btn-orange">ПОНЯТНО</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>

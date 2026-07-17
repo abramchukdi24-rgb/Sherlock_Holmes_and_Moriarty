@@ -1,0 +1,754 @@
+@font-face {
+    font-family: 'Arcade'; /* Это имя, которое мы даем шрифту */
+    src: url('../fonts/ArcadeJeu-Regular.otf'); /* Укажи тут точное название твоего файла шрифта! */
+}
+
+/* ========================================================== */
+/* ==========Настройки для всей страницы меню================ */
+/* ========================================================== */
+
+.menu-body {
+    margin: 0; /* Убираем белые рамки по краям экрана */
+    height: 100vh; /* Делаем высоту ровно на весь экран (100% видимой области) */
+    
+    /* ВОТ ТУТ МЫ ПОДКЛЮЧАЕМ ТВОЮ КАРТИНКУ */
+    background-image: url('../images/backgrounds/фон_меню.png'); 
+    
+    background-size: cover; /* Картинка растянется на весь экран без искажений */
+    background-position: center; /* Центрируем картинку */
+    
+    /* Эти три строчки ставят наше меню ровно по центру экрана */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    font-family: 'Arcade', sans-serif; /* Обычный понятный шрифт */
+}
+
+/* Настройки для самого окошка меню */
+.menu-container {
+
+    text-align: center; /* Текст по центру */
+
+}
+
+/* Настройки для названия игры */
+.game-title {
+    color: white; /* Белый цвет текста */
+    font-size: 50px; /* Размер шрифта */
+    margin-bottom: 60px;
+    letter-spacing: 5px; 
+    text-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+}
+
+/* Настройки для блока с кнопками, чтобы они были друг под другом */
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    align-items: center;
+}
+
+/* Превращаем обычные ссылки в КРАСИВЫЕ КНОПКИ */
+.btn {
+    color: white;
+    text-decoration: none;
+    padding: 15px 0;
+    width: 350px; /* Делаем кнопки одинаковой ширины */
+    font-size: 18px;
+    border-radius: 10px;
+    font-weight: bold;
+    transition: 0.2s;
+    display: block;
+    text-align: center;
+    /* ТЕНЬ ДЛЯ КНОПКИ: делает её объемной */
+    box-shadow: 0px 6px 0px rgba(0, 0, 0, 0.4); 
+}
+
+/* Цвет кнопки НАЧАТЬ (Желто-оранжевый) */
+.btn-start {
+    background-color: #a66c1c; 
+}
+
+/* Цвет кнопки ВЫЙТИ (Коричневый) */
+.btn-exit {
+    background-color: #37240a; 
+}
+
+/* Эффект при нажатии: кнопка "вдавливается" */
+.btn:active {
+    transform: translateY(4px);
+    box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.4);
+}
+
+/* Эффект при наведении: чуть ярче */
+.btn:hover {
+    filter: brightness(1.1);
+}
+
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* =======Настройки для сцен================================= */
+/* ========================================================== */
+
+
+.game-body { margin: 0; background: #000; overflow: hidden; font-family: 'Arcade', sans-serif; }
+
+#game-screen { position: relative; width: 100vw; height: 100vh; }
+
+#bg-layer {
+    position: absolute; width: 100%; height: 100%;
+    background-size: cover; background-position: center;
+    z-index: 1;
+}
+
+#char-img {
+    position: absolute;
+    bottom: -0 !important;
+    left: -20 !important;
+    
+    height: 50vh !important; 
+    
+    width: auto; 
+    z-index: 2;
+    display: none;
+    
+    filter: none;
+}
+
+#text-layer {
+    position: absolute;
+    bottom: 6%; /* Расстояние от нижнего края */
+    left: 0;
+    right: 0;
+    z-index: 3;
+    
+    /* ВЫРАВНИВАНИЕ И ОТСТУП */
+    text-align: left; /* Текст по левому краю */
+    padding-left: 20%; /* ОГРОМНЫЙ отступ слева (чтобы персонаж не закрывал текст) */
+    padding-right: 10%; /* Отступ справа для симметрии */
+    box-sizing: border-box; /* Чтобы отступы не ломали ширину экрана */
+}
+
+#main-dialogue {
+    color: white;
+    
+    /* ШРИФТ И РАЗМЕР */
+    font-family: 'Arcade', sans-serif; 
+    font-size: 15px; 
+    
+    line-height: 1.15; /* Расстояние между строчками текста */
+    
+    /* ТЕНЬ (чтобы текст не сливался с фоном) */
+    text-shadow: 
+        2px 2px 0 #000,
+       -2px -2px 0 #000,
+        2px -2px 0 #000,
+       -2px 2px 0 #000,
+        0px 5px 10px rgba(0,0,0,1);
+}
+
+/* Прозрачный слой для клика */
+#click-overlay {
+    position: absolute; width: 100%; height: 100%;
+    z-index: 4; cursor: pointer;
+}
+
+/* Слой для выбора - теперь он просто прозрачный экран */
+#choices-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 5;
+    /* Убираем flex и центрирование, чтобы стрелки не слипались в кучу */
+    pointer-events: none; 
+}
+
+/* Чтобы кнопки внутри всё-таки нажимались */
+#choices-overlay button, 
+#choices-overlay .phone-trigger-wrapper {
+    pointer-events: auto;
+}
+
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* =======стиль для навигации================================ */
+/* ========================================================== */
+
+
+/* Панель управления вверху справа */
+#UI-menu {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10; /* Чтобы кнопки всегда были сверху */
+    display: flex;
+    gap: 15px;
+}
+
+#UI-menu button {
+    background: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон под иконкой */
+    border: 2px solid white;
+    border-radius: 50%; /* Делаем кнопки круглыми */
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s;
+}
+
+#UI-menu button:hover {
+    background: #FFB84C; /* При наведении кнопка станет оранжевой */
+    transform: scale(1.1);
+}
+
+#UI-menu img {
+    width: 30px;
+    height: 30px;
+}
+
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* ========================================================== */
+/* Специальный режим для заставки (черный фон, текст в центре) */
+/* ========================================================== */
+
+/* Когда этот класс включен, фон становится просто черным */
+.title-mode #bg-layer {
+    background-image: none !important;
+    background-color: black !important;
+}
+
+/* Когда этот класс включен, текст прыгает в самый центр */
+.title-mode #text-layer {
+    top: 50%;
+    bottom: auto;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding-left: 0; /* Убираем отступ, который мы делали для персонажа */
+    text-align: center;
+    width: 100%;
+}
+
+.title-mode #main-dialogue {
+    font-size: 30px; /* Дату и время можно сделать покрупнее */
+    letter-spacing: 2px;
+}
+
+/* ========================================================== */
+/* ========== Вывод текста как печатная машинка ============= */
+/* ========================================================== */
+
+/* Мигающий курсор в конце текста */
+#main-dialogue::after {
+    content: "|";
+    animation: blink 0.8s infinite;
+    margin-left: 5px;
+    color: #FFB84C; /* Цвет курсора как у твоих кнопок */
+}
+
+@keyframes blink {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ========================================================== */
+/* ========== стелка и кнопка для телефона ================== */
+/* ========================================================== */
+
+/* 1. АНИМАЦИЯ ПЛАВАНИЯ */
+@keyframes floatArrow {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0); }
+}
+
+/* 1. ГЛАВНЫЙ КОНТЕЙНЕР (Стрелка + Кнопка) */
+/* ОБЩИЙ СТИЛЬ ДЛЯ ВСЕХ ТОЧЕК (и телефон, и поиск) */
+.phone-trigger-wrapper {
+    position: absolute !important;
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    align-items: center !important;
+    z-index: 10000 !important;
+    cursor: pointer;
+    /* Убираем жесткую ширину, пусть подстраивается под кнопку */
+}
+
+/* --- КООРДИНАТЫ ТЕЛЕФОНА (подбираем заново под новый экран) --- */
+.pos-phone {
+    bottom: 55% !important; /* Высота от низа */
+    right: 18% !important;  /* Отступ от правого края */
+}
+
+/* --- КООРДИНАТЫ ДЛЯ ПОИСКА (твои 3 точки) --- */
+.pos-table {
+    bottom: 50% !important;
+    left: 45% !important;
+}
+
+.pos-wardrobe {
+    top: 50% !important;
+    right: 90% !important;
+}
+
+.pos-door {
+    top: 40% !important;
+    right: 5% !important;
+    flex-direction: row-reverse !important; /* Плашка слева от стрелки */
+}
+
+/* 2. ТРЕУГОЛЬНИК (СТРЕЛКА) */
+.phone-arrow {
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 30px solid rgba(255, 184, 76, 0.8); /* Треугольник смотрит ВНИЗ */
+    
+    margin-top: 10px; /* Отступ от кнопки */
+    
+    animation: floatArrow 1.5s infinite ease-in-out;
+    flex-shrink: 0; /* Чтобы не сжимался */
+}
+
+/* 3. КНОПКА-ПЛАШКА */
+.phone-custom-btn {
+    /* Чтобы она не прыгала, мы её не скрываем через display, а делаем прозрачной */
+    opacity: 0; 
+    pointer-events: none; /* Пока прозрачная - нажать нельзя */
+    
+    width: 250px;
+    height: 80px;
+    background-image: url('/static/images/icons/phone_plate.png') !important;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    border: none;
+    
+    color: white;
+    font-family: 'Arcade', sans-serif;
+    font-size: 18px;
+    text-align: center;
+    text-shadow: 2px 2px 2px #000;
+    transition: 0.3s; /* Плавное появление */
+}
+
+/* 4. ЛОГИКА ПРИ НАВЕДЕНИИ */
+.phone-trigger-wrapper:hover .phone-custom-btn {
+    opacity: 1; /* Кнопка плавно проявляется */
+    pointer-events: auto; /* Теперь на неё можно нажать */
+}
+
+.phone-trigger-wrapper:hover .phone-arrow {
+    animation-play-state: paused; /* Стрелка замирает */
+}
+
+
+/* ========================================================== */
+/* ========== стелки и кнопка для поиска зацепок============= */
+/* ========================================================== */
+
+.arrow-right {
+    width: 0;
+    height: 0;
+    /* Рисуем треугольник, смотрящий вправо */
+    border-top: 20px solid transparent !important;
+    border-bottom: 20px solid transparent !important;
+    border-left: 30px solid rgba(255, 184, 76, 0.8) !important;
+    border-right: none !important;
+    
+    margin-left: 10px;
+    animation: floatArrowRight 1.5s infinite ease-in-out !important;
+}
+
+/* Анимация для стрелки вправо (влево-вправо) */
+@keyframes floatArrowRight {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(15px); }
+    100% { transform: translateX(0); }
+}
+
+/* --- ПОЗИЦИИ ДЛЯ ТРЕХ ТОЧЕК (Настрой под свою картинку) --- */
+
+/* 1. Стол (Table) */
+.pos-table {
+    top: 55% !important;
+    left: 40% !important;
+}
+
+/* 2. Шкаф (Wardrobe) */
+.pos-wardrobe {
+    top: 30% !important;
+    right: 15% !important;
+}
+
+/* 3. Дверь (Door) - тут используем стрелку направо */
+.pos-door {
+    top: 45% !important;
+    left: 10% !important;
+    flex-direction: row-reverse !important; /* Плашка будет слева от стрелки */
+}
+
+/* ========================================================== */
+/* ===================== ЭКРАН ЗАДАЧ ======================== */
+/* ========================================================== */
+
+.task-body { 
+    background: #1a1a1a; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: 100vh; 
+    margin: 0;
+    overflow: hidden; /* НИКАКОГО скролла всей страницы! */
+    font-family: 'Arcade', sans-serif !important; /* Твой шрифт сохранен */
+}
+
+/* ОБЩИЙ СТИЛЬ ТАЙМЕРА ДЛЯ ВСЕХ СТРАНИЦ */
+#search-timer-block, #task-timer-block {
+    position: absolute;
+    top: 20px; 
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 42px; /* Крупно */
+    color: #ff0000; /* Ярко-красный */
+    text-shadow: 3px 3px 0 #000;
+    z-index: 10000;
+    font-family: 'Arcade', sans-serif !important;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* СТИЛЬ ДЛЯ ВСПЛЫВАЮЩЕГО ШТРАФА */
+#game-penalty-popup, #penalty-popup {
+    color: #ff4444;
+    font-size: 32px;
+    font-weight: bold;
+    display: none; /* Скрыт по умолчанию */
+}
+
+/* --- ВСПЛЫВАЮЩИЙ ШТРАФ --- */
+#penalty-popup {
+    color: #ff3333;
+    font-size: 36px;
+    text-shadow: 2px 2px 0 #000;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease-out;
+}
+
+#penalty-popup.show-penalty {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.hidden { display: none !important; }
+
+/* КНИГА */
+#task-container {
+    width: 1100px; /* Ширина разворота */
+    height: 750px; /* Высота разворота */
+    background: #f8db8e; /* Твой фон сохранен */
+    background-size: 100% 100%;
+    position: relative; 
+    padding: 60px 40px; /* Отступы от краев картинки */
+    box-sizing: border-box;
+}
+
+.book-wrapper { 
+    display: flex; 
+    height: 100%; 
+    gap: 40px; /* Расстояние между левой и правой страницей */
+}
+
+/* ОБЕ СТРАНИЦЫ */
+.page { 
+    width: 50%; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; /* Элементы расталкиваются вверх и вниз */
+}
+
+/* === ЛЕВАЯ СТРАНИЦА === */
+#cipher-text-scroll {
+    margin-top: 20px; /* Отступ сверху (чтобы не прилипало к краю) */
+    height: 330px; /* Скорректировали высоту из-за отступа */
+    overflow-y: auto; /* Если текста больше - появляется скролл */
+    padding-right: 15px;
+}
+
+#cipher-text-scroll::-webkit-scrollbar { width: 8px; }
+#cipher-text-scroll::-webkit-scrollbar-thumb { background: #4a3621; border-radius: 4px; }
+
+#decoded-display { 
+    font-size: 22px; 
+    color: #2e1a05; 
+    line-height: 1.5; 
+    word-break: break-all;
+}
+
+/* Цвет замененных букв (красный/оранжевый) */
+.highlight-replace {
+    color: #cc2900; 
+    font-weight: bold;
+}
+
+#inputs-grid {
+    height: 250px; /* Нижняя половина левой страницы */
+    overflow-y: auto;
+    display: grid; 
+    grid-template-columns: 1fr 1fr; /* В две колонки */
+    gap: 15px; 
+}
+
+/* СТИЛЬ ИНПУТОВ */
+.input-pair {
+    font-family: 'Arcade', sans-serif;
+    font-size: 20px;
+    color: #2e1a05;
+}
+
+.y-input {
+    width: 40px !important;
+    height: 40px !important;
+    margin-left: 10px;
+    text-align: center;
+    font-family: 'Arcade', sans-serif;
+    font-size: 24px;
+    
+    /* Делаем прозрачными с линией внизу */
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid #2e1a05;
+    color: #cc2900; /* Цвет буквы, которую ввел игрок */
+}
+
+.y-input:focus {
+    outline: none;
+    border-bottom: 3px solid #cc2900;
+}
+
+/* === ПРАВАЯ СТРАНИЦА === */
+.chart-container {
+    margin-top: 20px; /* Точно такой же отступ, как у текста слева! */
+    height: 330px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.canvas-wrapper {
+    width: 100%;
+    flex-grow: 1; /* График займет всё свободное место под кнопкой */
+}
+
+.lestrade-box {
+    height: 250px; /* Нижняя половина правой страницы */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Прижимаем кнопку вниз */
+    text-align: center;
+}
+
+#lestrade-text {
+    font-size: 24px;
+    color: #2e1a05;
+    margin-bottom: 20px;
+}
+
+/* --- КНОПКИ (Без рамок, подчеркнутые) --- */
+.btn-task {
+    display: inline-block;
+    background: none !important; /* Убрали фон */
+    border: none !important; /* Убрали рамки */
+    box-shadow: none !important; /* Убрали тени */
+    
+    color: #2e1a05; /* Цвет текста */
+    font-family: 'Arcade', sans-serif !important;
+    font-size: 26px; /* Размер шрифта кнопок */
+    
+    text-decoration: underline; /* Подчеркивание */
+    text-decoration-thickness: 4px; /* Толщина подчеркивания */
+    text-underline-offset: 6px; /* Отступ линии от текста */
+    
+    cursor: pointer;
+    transition: 0.2s;
+    margin: 10px auto;
+}
+
+.btn-task:hover {
+    color: #cc2900; /* При наведении текст становится красноватым */
+}
+
+.btn-task:active {
+    transform: translateY(2px); /* При клике чуть дергается вниз */
+}
+
+
+
+#game-penalty-popup {
+    display: none;
+    color: #ff3333; 
+    margin-left: 20px;
+}
+
+/* Анимация для штрафа */
+@keyframes penaltySlide {
+    0% {
+        opacity: 0;
+        transform: translateX(40px); /* Появляется правее */
+    }
+    20% {
+        opacity: 1;
+        transform: translateX(20px); /* Становится ярким */
+    }
+    80% {
+        opacity: 1;
+        transform: translateX(0px);  /* Плывет к таймеру */
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-20px); /* Улетает влево и гаснет */
+    }
+}
+
+.penalty-animation {
+    display: inline-block !important;
+    animation: penaltySlide 2s ease-out forwards;
+    color: #ff0000;
+    font-weight: bold;
+}
+
+/* ========================================================== */
+/* ===================== УВЕДОМЛЕНИЯ ======================== */
+/* ========================================================== */
+
+.notification-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.9); /* Глубокое затемнение */
+    z-index: 99999 !important;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.notification-content {
+    text-align: center;
+    width: 850px; /* УВЕЛИЧИЛИ ШИРИНУ */
+}
+
+.notification-title {
+    /* СВЕТЛЫЙ И ЯРКИЙ ЗАГОЛОВОК */
+    color: #FFB84C !important; 
+    font-size: 45px !important; 
+    font-family: 'Arcade', sans-serif !important;
+    margin-bottom: 30px;
+    letter-spacing: 5px;
+    text-shadow: 0 0 15px rgba(255, 184, 76, 0.6); /* Эффект свечения */
+}
+
+.notification-paper {
+    background-image: url('/static/images/icons/phone_plate.png') !important;
+    background-size: 100% 100% !important; /* Растягиваем картинку на весь блок */
+    padding: 80px 60px; /* Увеличили внутренние отступы */
+    min-height: 250px; /* УВЕЛИЧИЛИ ВЫСОТУ */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none; /* Убираем рамки, если мешают картинке */
+}
+
+#notification-text {
+    /* СВЕТЛЫЙ ТЕКСТ (если фон темный) или ТЕМНЫЙ (если фон - светлая бумага) */
+    /* Давай сделаем его темно-коричневым, так как плашка обычно светлая */
+    color: #2e1a05; 
+    font-size: 30px; 
+    font-family: 'Arcade', sans-serif;
+    line-height: 1.4;
+    text-align: center;
+    max-width: 90%;
+}
+
+/* Кнопка внутри уведомления */
+#close-notification {
+    margin-top: 30px;
+    font-size: 30px !important;
+    color: white !important;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Arcade', sans-serif;
+}
+
+#close-notification:hover {
+    color: #FFB84C !important;
+}
+
+
+/* --- СТИЛЬ ФИНАЛЬНОГО ПАЗЛА --- */
+#final-puzzle-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 5px solid #FFB84C; /* Оранжевая рамка как у кнопок */
+    padding: 50px;
+    text-align: center;
+    z-index: 110000 !important; /* Выше всех слоев */
+    width: 600px;
+    box-shadow: 0 0 30px rgba(255, 184, 76, 0.4);
+}
+
+#final-timer {
+    font-family: 'Arcade', sans-serif;
+    font-size: 60px;
+    color: #ff0000;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 0 black;
+}
+
+.final-puzzle-title {
+    color: white;
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+#final-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid white;
+    color: #FFB84C;
+    font-family: 'Arcade', sans-serif;
+    font-size: 40px;
+    text-align: center;
+    outline: none;
+    margin-bottom: 40px;
+}
+
+#final-input:focus {
+    border-bottom: 3px solid #FFB84C;
+}

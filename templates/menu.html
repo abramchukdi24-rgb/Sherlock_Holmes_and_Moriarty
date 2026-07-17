@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Детективчик</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="menu-body">
+
+    <div class="menu-container">
+        <!-- Название игры по твоему запросу -->
+        <h1 class="game-title">ДЕТЕКТИВЧИК</h1>
+        
+        <div class="menu-buttons">
+            <!-- Кнопка Начать — желто-оранжевая -->
+            <a href="/start" class="btn btn-start">НАЧАТЬ ДЕЛО</a>
+            
+            <!-- Кнопка Выйти — коричневая -->
+            <a href="/exit_game" class="btn btn-exit">ВЫЙТИ</a>
+        </div>
+    </div>
+
+</body>
+</html>
