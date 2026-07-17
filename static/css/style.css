@@ -299,13 +299,13 @@
 
 /* --- КООРДИНАТЫ ДЛЯ ПОИСКА (твои 3 точки) --- */
 .pos-table {
-    bottom: 50% !important;
-    left: 45% !important;
+    bottom: 55% !important;
+    left: 40% !important;
 }
 
 .pos-wardrobe {
-    top: 50% !important;
-    right: 90% !important;
+    top: 15% !important;
+    right: 5% !important;
 }
 
 .pos-door {
@@ -330,12 +330,12 @@
 
 /* 3. КНОПКА-ПЛАШКА */
 .phone-custom-btn {
-    /* Чтобы она не прыгала, мы её не скрываем через display, а делаем прозрачной */
+
     opacity: 0; 
-    pointer-events: none; /* Пока прозрачная - нажать нельзя */
+    pointer-events: none; 
     
-    width: 250px;
-    height: 80px;
+    width: 400px;
+    height: 120px;
     background-image: url('/static/images/icons/phone_plate.png') !important;
     background-size: contain;
     background-repeat: no-repeat;
@@ -348,7 +348,7 @@
     font-size: 18px;
     text-align: center;
     text-shadow: 2px 2px 2px #000;
-    transition: 0.3s; /* Плавное появление */
+    transition: 0.3s; 
 }
 
 /* 4. ЛОГИКА ПРИ НАВЕДЕНИИ */
@@ -377,34 +377,6 @@
     
     margin-left: 10px;
     animation: floatArrowRight 1.5s infinite ease-in-out !important;
-}
-
-/* Анимация для стрелки вправо (влево-вправо) */
-@keyframes floatArrowRight {
-    0% { transform: translateX(0); }
-    50% { transform: translateX(15px); }
-    100% { transform: translateX(0); }
-}
-
-/* --- ПОЗИЦИИ ДЛЯ ТРЕХ ТОЧЕК (Настрой под свою картинку) --- */
-
-/* 1. Стол (Table) */
-.pos-table {
-    top: 55% !important;
-    left: 40% !important;
-}
-
-/* 2. Шкаф (Wardrobe) */
-.pos-wardrobe {
-    top: 30% !important;
-    right: 15% !important;
-}
-
-/* 3. Дверь (Door) - тут используем стрелку направо */
-.pos-door {
-    top: 45% !important;
-    left: 10% !important;
-    flex-direction: row-reverse !important; /* Плашка будет слева от стрелки */
 }
 
 /* ========================================================== */
