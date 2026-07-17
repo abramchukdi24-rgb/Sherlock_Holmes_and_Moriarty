@@ -32,6 +32,10 @@ async function startTask() {
     updateChart();
     
     document.getElementById('lestrade-text').innerText = taskData.intro_slides[0] || "Изучаю шифр...";
+    // Показываем кнопки только во втором задании
+    if (taskData.task_id === 2) {
+        document.getElementById("scytale-btn").style.display = "inline-block";
+    }
 }
 
 // 2. ТАЙМЕР
@@ -203,3 +207,28 @@ function showSystemMessage(text, callback) {
 }
 
 startTask();
+
+// ======================
+// Работа кнопок Скиталы
+// ======================
+
+const applyBtn = document.getElementById("scytale-btn");
+const cancelBtn = document.getElementById("cancel-scytala-btn");
+
+applyBtn.onclick = () => {
+    scytaleApplied = true;
+
+    renderDecodedText();
+
+    applyBtn.style.display = "none";
+    cancelBtn.style.display = "inline-block";
+};
+
+cancelBtn.onclick = () => {
+    scytaleApplied = false;
+
+    renderDecodedText();
+
+    cancelBtn.style.display = "none";
+    applyBtn.style.display = "inline-block";
+};
