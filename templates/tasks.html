@@ -8,13 +8,11 @@
 </head>
 <body class="task-body">
 
-    <!-- ТАЙМЕР -->
     <div id="task-timer-block">
         <span id="timer-display">40:00</span>
         <span id="penalty-popup" class="hidden">-10:00 MIN</span>
     </div>
 
-    <!-- КНИГА -->
     <div id="task-container">
         <div class="book-wrapper">
             
@@ -48,6 +46,16 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+    
+    <div id="system-notification" class="notification-overlay" style="display: none;">
+        <div class="notification-content">
+            <h2 class="notification-title">СИСТЕМНОЕ УВЕДОМЛЕНИЕ</h2>
+            <div class="notification-paper">
+                <p id="notification-text"></p>
+            </div>
+            <button id="close-notification" class="btn-task btn-orange">ПОНЯТНО</button>
         </div>
     </div>
 

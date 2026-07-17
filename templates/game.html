@@ -26,11 +26,11 @@
             </button> 
         </div>
 
-        <div id="search-timer-block" style="display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 36px; color: red; text-shadow: 2px 2px 0 #000; z-index: 10000; font-family: 'Arcade Gamer', sans-serif;">
+        <div id="search-timer-block">
             <span id="game-timer-display">40:00</span>
             <span id="game-penalty-popup" style="display: none; color: #ff3333; margin-left: 20px;">-5:00 MIN</span>
         </div>
-        
+
         <!-- 4. Текст (только тени, как ты просила) -->
         <div id="text-layer">
             <p id="main-dialogue"></p>
@@ -41,6 +41,16 @@
         
         <!-- 6. Слой для кнопок выбора (появятся в конце) -->
         <div id="choices-overlay"></div>
+    </div>
+
+     <div id="system-notification" class="notification-overlay" style="display: none;">
+        <div class="notification-content">
+            <h2 class="notification-title">СИСТЕМНОЕ УВЕДОМЛЕНИЕ</h2>
+            <div class="notification-paper">
+                <p id="notification-text"></p>
+            </div>
+            <button id="close-notification" class="btn-task btn-orange">ПОНЯТНО</button>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/game.js') }}"></script>

@@ -407,8 +407,6 @@
     flex-direction: row-reverse !important; /* Плашка будет слева от стрелки */
 }
 
-
-
 /* ========================================================== */
 /* ===================== ЭКРАН ЗАДАЧ ======================== */
 /* ========================================================== */
@@ -638,4 +636,72 @@
     animation: penaltySlide 2s ease-out forwards;
     color: #ff0000;
     font-weight: bold;
+}
+
+/* ========================================================== */
+/* ===================== УВЕДОМЛЕНИЯ ======================== */
+/* ========================================================== */
+
+.notification-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.9); /* Глубокое затемнение */
+    z-index: 99999 !important;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.notification-content {
+    text-align: center;
+    width: 850px; /* УВЕЛИЧИЛИ ШИРИНУ */
+}
+
+.notification-title {
+    /* СВЕТЛЫЙ И ЯРКИЙ ЗАГОЛОВОК */
+    color: #FFB84C !important; 
+    font-size: 45px !important; 
+    font-family: 'Arcade', sans-serif !important;
+    margin-bottom: 30px;
+    letter-spacing: 5px;
+    text-shadow: 0 0 15px rgba(255, 184, 76, 0.6); /* Эффект свечения */
+}
+
+.notification-paper {
+    background-image: url('/static/images/icons/phone_plate.png') !important;
+    background-size: 100% 100% !important; /* Растягиваем картинку на весь блок */
+    padding: 80px 60px; /* Увеличили внутренние отступы */
+    min-height: 250px; /* УВЕЛИЧИЛИ ВЫСОТУ */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none; /* Убираем рамки, если мешают картинке */
+}
+
+#notification-text {
+    /* СВЕТЛЫЙ ТЕКСТ (если фон темный) или ТЕМНЫЙ (если фон - светлая бумага) */
+    /* Давай сделаем его темно-коричневым, так как плашка обычно светлая */
+    color: #2e1a05; 
+    font-size: 30px; 
+    font-family: 'Arcade', sans-serif;
+    line-height: 1.4;
+    text-align: center;
+    max-width: 90%;
+}
+
+/* Кнопка внутри уведомления */
+#close-notification {
+    margin-top: 30px;
+    font-size: 30px !important;
+    color: white !important;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Arcade', sans-serif;
+}
+
+#close-notification:hover {
+    color: #FFB84C !important;
 }
