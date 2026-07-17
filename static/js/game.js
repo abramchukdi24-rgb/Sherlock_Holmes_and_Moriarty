@@ -11,8 +11,9 @@ async function loadScene() {
     if (timerBlock) timerBlock.style.display = 'none';
 
     const urlParams = new URLSearchParams(window.location.search);
-    let sceneId = urlParams.get('scene_id') || 1; 
+    let sceneId = parseInt(urlParams.get('scene_id')) || 1; 
     let secondsFromUrl = urlParams.get('seconds');
+
     if (secondsFromUrl) searchTimeSeconds = parseInt(secondsFromUrl);
 
     const response = await fetch(`/api/scene?scene_id=${sceneId}`);
@@ -84,13 +85,9 @@ function showSystemMessage(text, callback) {
     document.getElementById('notification-text').innerText = text.toUpperCase();
     overlay.style.display = 'flex';
 
-    // --- ЛОГИКА ШТРАФА ВНУТРИ УВЕДОМЛЕНИЯ ---
     if (text.includes("БАЗОЙ ДАННЫХ")) {
-        // Отнимаем 10 минут
         searchTimeSeconds = Math.max(0, searchTimeSeconds - 600);
         updateSearchTimerDisplay();
-        
-        // Показываем анимацию штрафа рядом с таймером
         const penalty = document.getElementById('game-penalty-popup');
         if (penalty) {
             penalty.innerText = "-10:00 MIN";
@@ -106,16 +103,28 @@ function showSystemMessage(text, callback) {
 }
 
 document.getElementById('click-overlay').addEventListener('click', () => {
+    // 1. Ускорение текста
     if (isTyping) {
         clearTimeout(typingTimeout);
         document.getElementById('main-dialogue').innerText = sceneData[currentState][currentStep].text;
         isTyping = false;
         return; 
     }
+
+    // 2. Логика Титров (Сцена 7)
+    // Если мы в 7 сцене и интерактив был удален (значит, мы сделали выбор)
+    if (sceneData.scene_id == 7 && sceneData.final_choice_interact === null) {
+        showCredits();
+        return;
+    }
+
+    // 3. Телефон
     if (currentState === 'intro_steps' && currentStep === sceneData.intro_steps.length - 1 && sceneData.phone_trigger) {
         showPhoneUI();
         return;
     }
+
+    // 4. Обычное листание
     if (currentStep < sceneData[currentState].length - 1) {
         currentStep++;
         render();
@@ -134,19 +143,11 @@ document.getElementById('click-overlay').addEventListener('click', () => {
 
 function handleEndOfScene() {
     const sceneId = parseInt(sceneData.scene_id);
-    console.log("Конец сцены, переходим:", sceneId);
-
-    if (sceneId === 1) {
-        window.location.href = `/tasks?task_id=1&seconds=${searchTimeSeconds}`;
-    } else if (sceneId === 3) {
-        window.location.href = `/tasks?task_id=2&seconds=${searchTimeSeconds}`;
-    } else if (sceneId === 5) {
-        window.location.href = `/tasks?task_id=3&seconds=${searchTimeSeconds}`;
-    } else if (sceneId === 7) {
-        window.location.href = '/'; 
-    } else {
-        window.location.href = `/game?scene_id=${sceneId + 1}&seconds=${searchTimeSeconds}`;
-    }
+    if (sceneId === 1) window.location.href = `/tasks?task_id=1&seconds=${searchTimeSeconds}`;
+    else if (sceneId === 3) window.location.href = `/tasks?task_id=2&seconds=${searchTimeSeconds}`;
+    else if (sceneId === 5) window.location.href = `/tasks?task_id=3&seconds=${searchTimeSeconds}`;
+    else if (sceneId === 7) { /* Ничего не делаем, ждем клика для титров */ } 
+    else window.location.href = `/game?scene_id=${sceneId + 1}&seconds=${searchTimeSeconds}`;
 }
 
 function startSearchTimer(reset = true) {
@@ -178,6 +179,7 @@ function showPhoneUI() {
 function showSearchUI() {
     const overlay = document.getElementById('choices-overlay');
     overlay.innerHTML = "";
+    
     let choices = sceneData.search_interact ? sceneData.search_interact.choices : sceneData.final_choice_interact.choices;
 
     choices.forEach(choice => {
@@ -198,42 +200,85 @@ async function handleSearchAction(actionId) {
     });
     const result = await response.json();
     
-    // 1. СРАЗУ очищаем экран от стрелок и "забываем" про интерактив
+    // Очищаем экран от стрелок
     document.getElementById('choices-overlay').innerHTML = "";
-    sceneData.search_interact = null;
-    sceneData.final_choice_interact = null;
 
-    // 2. Если бэкенд запустил ФИНАЛЬНЫЙ ПАЗЛ (Сцена 7)
+    // --- 1. ЛОГИКА ФИНАЛА (СЦЕНА 7) ---
     if (result.status === 'start_final_puzzle') {
-        // Показываем текст, который идет ПЕРЕД вводом слова
+        sceneData.final_choice_interact = null; // Отключаем стрелки навсегда
+        
         if (result.dialogue_step) {
+            // Подменяем текст текущего кадра на финальный
+            sceneData[currentState][currentStep] = { text: result.dialogue_step.text };
+            
+            // ВАЖНО: мы запускаем печатную машинку и ждем, пока она не закончит, 
+            // прежде чем показать пазл.
             typeWriter(result.dialogue_step.text);
-        }
-        // Запускаем окно ввода "МОРИАРТИ" через 2 секунды
-        setTimeout(() => {
+            
+            // Как узнать, что текст допечатался? Запускаем цикл проверки
+            let checkTyping = setInterval(() => {
+                if (!isTyping) { // Как только машинка остановилась (сама или по клику)
+                    clearInterval(checkTyping);
+                    startFinalPuzzle(result.puzzle_config); // Вызываем окно ввода!
+                }
+            }, 500);
+        } else {
+            // Если пред-текста нет, запускаем пазл сразу
             startFinalPuzzle(result.puzzle_config);
-        }, 2000);
+        }
+        return;
     } 
-    // 3. Если это обычный конец игры (титры/уход)
     else if (result.status === 'game_over_credits') {
+        sceneData.final_choice_interact = null; 
         if (result.dialogue_step) {
+            sceneData[currentState][currentStep] = { text: result.dialogue_step.text };
             typeWriter(result.dialogue_step.text);
         }
-        setTimeout(() => { window.location.href = '/'; }, 8000);
+        return; // Ждем клика игрока по экрану для показа титров
     }
-    // 4. Обычная победа в поиске (Сцены 1, 5)
-    else if (result.status === 'win') {
+    
+    // ... остальной код функции (штрафы времени, победа, диалог допроса и т.д.) ...
+
+    // 2. ОБНОВЛЕНИЕ ВРЕМЕНИ ДЛЯ ПОИСКА (штрафы)
+    if (result.time_left !== undefined && result.time_left !== null) {
+        let newTimeMinutes = Array.isArray(result.time_left) ? result.time_left[0] : result.time_left;
+        let newTimeSeconds = newTimeMinutes * 60;
+
+        if (newTimeSeconds < searchTimeSeconds) {
+            let diff = Math.floor((searchTimeSeconds - newTimeSeconds) / 60);
+            searchTimeSeconds = newTimeSeconds;
+            updateSearchTimerDisplay();
+            
+            const penalty = document.getElementById('game-penalty-popup');
+            if (penalty) {
+                penalty.innerText = `-${diff}:00 MIN`; 
+                penalty.style.display = 'inline';
+                penalty.classList.add('penalty-animation');
+                setTimeout(() => { 
+                    penalty.classList.remove('penalty-animation');
+                    penalty.style.display = 'none';
+                }, 2000);
+            }
+        }
+    }
+
+    // 3. ПОБЕДА И ПЕРЕХОД К ЗАДАНИЮ
+    if (result.status === 'win') { 
         clearInterval(searchTimerInterval);
-        handleEndOfScene();
-    }
-    // 5. Если пришел диалог (Сцена 5 допрос)
+        handleEndOfScene(); 
+    } 
+    // 4. ДИАЛОГ (Например, допрос курьера в 5 сцене)
     else if (result.dialogue_steps && result.dialogue_steps.length > 0) {
+        // !!! ВОТ ИСПРАВЛЕНИЕ !!!
+        sceneData.search_interact = null; // ЗАСТАВЛЯЕМ ИГРУ ЗАБЫТЬ ПРО СТРЕЛКИ
+        // -------------------------
+
         currentState = 'dialogue_steps';
         currentStep = 0;
         sceneData.dialogue_steps = result.dialogue_steps; 
-        render(); 
-    }
-    // 6. Любой другой текст
+        render(); // Рисуем новый текст
+    } 
+    // 5. ОШИБКА ПОИСКА (Неправильный шкаф в 1 сцене)
     else {
         document.getElementById('main-dialogue').innerText = result.text || "Ничего не произошло.";
     }
@@ -241,13 +286,10 @@ async function handleSearchAction(actionId) {
 
 // --- ФИНАЛЬНЫЙ ПАЗЛ (СЦЕНА 7) ---
 function startFinalPuzzle(config) {
-    console.log("Запуск финального пазла с конфигом:", config); // Для отладки
-    
     let timeLeft = config.timer_limit_seconds || 35;
     const overlay = document.getElementById('choices-overlay');
     const mainClickLayer = document.getElementById('click-overlay');
 
-    // Блокируем клики по фону, чтобы не закрыть окно случайно
     mainClickLayer.style.pointerEvents = 'none';
 
     overlay.innerHTML = `
@@ -260,19 +302,15 @@ function startFinalPuzzle(config) {
         </div>
     `;
 
-    // Автофокус на поле ввода
     setTimeout(() => {
         const input = document.getElementById('final-input');
         if (input) input.focus();
     }, 200);
 
-    // Таймер
     const timer = setInterval(() => {
         timeLeft--;
         const timerElem = document.getElementById('final-timer');
-        if (timerElem) {
-            timerElem.innerText = timeLeft;
-        }
+        if (timerElem) timerElem.innerText = timeLeft;
         
         if (timeLeft <= 0) {
             clearInterval(timer);
@@ -281,20 +319,14 @@ function startFinalPuzzle(config) {
         }
     }, 1000);
 
-    // Обработка клика по кнопке "Сдать"
     document.getElementById('final-submit').onclick = (e) => {
-        e.stopPropagation(); // Защита от пролета клика сквозь кнопку
-        
+        e.stopPropagation(); 
         const input = document.getElementById('final-input');
         const val = input.value.toUpperCase().trim();
         
-        console.log("Введено слово:", val);
-        clearInterval(timer); // Останавливаем таймер
-        
-        // Возвращаем возможность кликать по экрану
+        clearInterval(timer);
         mainClickLayer.style.pointerEvents = 'auto'; 
 
-        // Проверяем ответ
         if (val === config.correct_word.toUpperCase()) {
             renderFinalBranch(config.win_branch);
         } else {
@@ -303,35 +335,25 @@ function startFinalPuzzle(config) {
     };
 }
 
-// --- ОТРИСОВКА ИТОГА ФИНАЛА ---
 function renderFinalBranch(branch) {
-    console.log("Отрисовка финала:", branch);
-    
-    // 1. ВАЖНО: Удаляем данные об интерактиве, чтобы клики по экрану 
-    // больше не вызывали появление стрелок/кнопок
-    sceneData.search_interact = null;
-    sceneData.final_choice_interact = null;
-    currentState = 'dialogue_steps'; // Переключаем состояние в обычный текст
-
-    // 2. Полностью очищаем слой с кнопками и окном ввода
     document.getElementById('choices-overlay').innerHTML = "";
+    sceneData.final_choice_interact = null; 
     
-    // 3. Выводим текст результата через нашу "печатную машинку"
-    if (branch && branch.text) {
-        typeWriter(branch.text);
-    } else {
-        document.getElementById('main-dialogue').innerText = "ИГРА ЗАВЕРШЕНА.";
-    }
+    // Создаем временный шаг, чтобы по клику можно было ускорить
+    sceneData[currentState][currentStep] = { text: branch.text };
+    typeWriter(branch.text);
+    // Ждем клика игрока для показа титров
+}
 
-    // 4. Через 7 секунд показываем финальное системное уведомление
-    setTimeout(() => {
-        // Проверяем, не ушел ли пользователь уже со страницы
-        if (window.location.pathname.includes('game')) {
-            showSystemMessage("СПАСИБО ЗА ИГРУ! ВЫ ПРОШЛИ ДЕТЕКТИВЧИК ДО КОНЦА.", () => {
-                window.location.href = '/'; // Возврат в меню
-            });
-        }
-    }, 12000);
+function showCredits() {
+    const gameScreen = document.getElementById('game-screen');
+    gameScreen.innerHTML = `
+        <div style="width:100%; height:100%; background:black; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; font-family:'Arcade', sans-serif; text-align:center; animation: fadeIn 3s;">
+            <h1 style="font-size:60px; color:#FFB84C; margin-bottom: 20px;">КОНЕЦ ДЕЛА</h1>
+            <p style="font-size:28px;">Спасибо за прохождение нашего детективчика!</p>
+            <button onclick="window.location.href='/'" class="btn-task" style="margin-top:60px; color:#FFB84C; text-decoration:underline; background:none; border:none; cursor:pointer; font-size:28px;">В ГЛАВНОЕ МЕНЮ</button>
+        </div>
+    `;
 }
 
 loadScene();
