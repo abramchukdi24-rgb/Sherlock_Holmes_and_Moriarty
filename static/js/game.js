@@ -197,48 +197,42 @@ async function handleSearchAction(actionId) {
         body: JSON.stringify({ action_id: actionId }) 
     });
     const result = await response.json();
-    
-    // Очищаем экран от кнопок выбора
+
+    // 1. ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ВРЕМЯ
+    // Если результат пришел, берем из него время (оно уже должно быть изменено Питоном)
+    if (result.time_left !== undefined) {
+        // Если пришло число, переводим в секунды
+        searchTimeSeconds = result.time_left * 60;
+        updateSearchTimerDisplay();
+        
+        // Показываем анимацию штрафа, если выбрано неверное действие
+        if (!result.status || result.status !== 'win') {
+            const penalty = document.getElementById('game-penalty-popup');
+            if (penalty) {
+                penalty.innerText = "-5:00 MIN";
+                penalty.style.display = 'inline';
+                penalty.classList.add('penalty-animation');
+                setTimeout(() => { penalty.classList.remove('penalty-animation'); penalty.style.display = 'none'; }, 2000);
+            }
+        }
+    }
+
+    // 2. ОТРИСОВКА
     document.getElementById('choices-overlay').innerHTML = "";
-    
-    // 1. Если бэкенд говорит, что мы победили в поиске (win)
+
     if (result.status === 'win') { 
         clearInterval(searchTimerInterval);
-        
-        // Определяем, куда идти в зависимости от текущей сцены
-        let nextTask = 1; // По умолчанию
-        if (sceneData.scene_id === 1) nextTask = 1;
-        else if (sceneData.scene_id === 5) nextTask = 3; // После 5 сцены идет 3 задание
-        
+        let nextTask = (sceneData.scene_id === 1) ? 1 : (sceneData.scene_id === 5 ? 3 : 2);
         window.location.href = `/tasks?task_id=${nextTask}&seconds=${searchTimeSeconds}`; 
     } 
-    // 2. Если бэкенд прислал текст (например, диалог после выбора)
     else if (result.dialogue_steps && result.dialogue_steps.length > 0) {
         currentState = 'dialogue_steps';
         currentStep = 0;
-        // Подменяем данные сцены на те, что пришли из ответа (текст допроса курьера и т.д.)
         sceneData.dialogue_steps = result.dialogue_steps; 
-        
-        // Если пришло уведомление (например, про 10 минут штрафа)
-        if (result.system_notification) {
-            showSystemMessage(result.system_notification);
-        }
-        
-        // Обновляем время, если оно изменилось
-        if (result.time_left !== undefined) {
-            searchTimeSeconds = result.time_left * 60;
-            updateSearchTimerDisplay();
-        }
-        
-        render(); // Рисуем полученный диалог
-    }
-    // 3. Если просто ошибка или продолжаем
+        render(); 
+    } 
     else {
         document.getElementById('main-dialogue').innerText = result.text || "Ничего не произошло.";
-        if (result.time_left !== undefined) {
-            searchTimeSeconds = result.time_left * 60;
-            updateSearchTimerDisplay();
-        }
     }
 }
 

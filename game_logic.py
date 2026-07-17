@@ -26,30 +26,15 @@ def inject_dynamic_notification(scene_data, current_scene):
     return scene_data
 
 def apply_penalty(penalty_minutes, current_scene_id, action_id=None):
-    """
-    Вычитает штраф из времени сессии первый раз взаимодействия.
-    Возвращает кортеж: (new_time, is_game_over)
-    """
-    # Достаем список уже примененных штрафов
-    applied_penalties = session.get('applied_penalties', [])
-
-    # Создаем уникальный ключ текущего действия + берем время
-    penalty_key = f"scene_{current_scene_id}_{action_id}" if action_id else f"scene_{current_scene_id}"
+    # Берем время из сессии
     current_time = session.get('time_left', 40)
 
-    # игнорир
-    if penalty_key in applied_penalties:
-        return current_time, current_time <= 0
-
-    # штраф новый
+    # ВСЕГДА списываем штраф, если он больше 0
     if penalty_minutes > 0:
         current_time = max(0, current_time - penalty_minutes)
         session['time_left'] = current_time
-
-        # Запоминаем, что этот штраф мы списали
-        applied_penalties.append(penalty_key)
-        session['applied_penalties'] = applied_penalties
         session.modified = True
+        
     return current_time
 
 def handle_scene_one_actions(action_id):
