@@ -724,3 +724,20 @@
 #final-input:focus {
     border-bottom: 3px solid #FFB84C;
 }
+
+
+/* --- СЦЕНА 5: Допрос или Код --- */
+
+/* Позиция для допроса курьера */
+.pos-interrogation {
+    position: absolute !important;
+    top: 60% !important; 
+    left: 20% !important; /* Левая часть */
+}
+
+/* Позиция для вскрытия конверта */
+.pos-code {
+    position: absolute !important;
+    top: 40% !important;
+    right: 20% !important; /* Правая часть */
+}

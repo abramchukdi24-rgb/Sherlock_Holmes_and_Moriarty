@@ -197,42 +197,36 @@ async function handleSearchAction(actionId) {
         body: JSON.stringify({ action_id: actionId }) 
     });
     const result = await response.json();
-
-    // 1. ПРИНУДИТЕЛЬНО ОБНОВЛЯЕМ ВРЕМЯ
-    // Если результат пришел, берем из него время (оно уже должно быть изменено Питоном)
-    if (result.time_left !== undefined) {
-        // Если пришло число, переводим в секунды
-        searchTimeSeconds = result.time_left * 60;
-        updateSearchTimerDisplay();
-        
-        // Показываем анимацию штрафа, если выбрано неверное действие
-        if (!result.status || result.status !== 'win') {
-            const penalty = document.getElementById('game-penalty-popup');
-            if (penalty) {
-                penalty.innerText = "-5:00 MIN";
-                penalty.style.display = 'inline';
-                penalty.classList.add('penalty-animation');
-                setTimeout(() => { penalty.classList.remove('penalty-animation'); penalty.style.display = 'none'; }, 2000);
-            }
-        }
-    }
-
-    // 2. ОТРИСОВКА
+    
+    // 1. Убираем стрелки СРАЗУ, чтобы они не висели в допросной
     document.getElementById('choices-overlay').innerHTML = "";
 
+    // 2. Обновляем время (чтобы штраф 10 минут за курьера отобразился)
+    if (result.time_left !== undefined) {
+        searchTimeSeconds = result.time_left * 60;
+        updateSearchTimerDisplay();
+    }
+
+    // 3. Если выбрали "Вскрыть конверт" (win)
     if (result.status === 'win') { 
         clearInterval(searchTimerInterval);
-        let nextTask = (sceneData.scene_id === 1) ? 1 : (sceneData.scene_id === 5 ? 3 : 2);
-        window.location.href = `/tasks?task_id=${nextTask}&seconds=${searchTimeSeconds}`; 
+        // Переходим к заданию (номер задания определится в handleEndOfScene)
+        handleEndOfScene(); 
     } 
+    // 4. Если выбрали "Допрос" (пришел новый текст)
     else if (result.dialogue_steps && result.dialogue_steps.length > 0) {
+        // ВАЖНО: Удаляем поиск из данных, чтобы стрелки больше не появлялись!
+        sceneData.search_interact = null; 
+
         currentState = 'dialogue_steps';
         currentStep = 0;
         sceneData.dialogue_steps = result.dialogue_steps; 
+
         render(); 
-    } 
+    }
+    // 5. Обычная ошибка (как в 1 сцене)
     else {
-        document.getElementById('main-dialogue').innerText = result.text || "Ничего не произошло.";
+        document.getElementById('main-dialogue').innerText = result.text;
     }
 }
 
