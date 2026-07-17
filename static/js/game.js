@@ -7,6 +7,9 @@ let searchTimerInterval = null;
 let searchTimeSeconds = 0;
 
 async function loadScene() {
+    const timerBlock = document.getElementById('search-timer-block');
+    if (timerBlock) timerBlock.style.display = 'none';
+
     const urlParams = new URLSearchParams(window.location.search);
     let sceneId = urlParams.get('scene_id') || 1; 
     let secondsFromUrl = urlParams.get('seconds');
@@ -16,15 +19,10 @@ async function loadScene() {
     sceneData = await response.json();
     
     currentStep = 0; 
-    if (sceneData.intro_steps && sceneData.intro_steps.length > 0) {
-        currentState = 'intro_steps';
-    } else {
-        currentState = 'dialogue_steps';
-    }
+    currentState = (sceneData.intro_steps && sceneData.intro_steps.length > 0) ? 'intro_steps' : 'dialogue_steps';
 
     render();
 
-    // Если это результат (2, 4, 6)
     if (sceneId % 2 === 0 && searchTimeSeconds > 0) {
         startSearchTimer(false); 
     }
@@ -52,10 +50,16 @@ function render() {
 
     typeWriter(step.text);
 
-    // ПРОВЕРКА УВЕДОМЛЕНИЙ ОТ БЭКЕНДА
-    if (sceneData.system_notification) {
-        showSystemMessage(sceneData.system_notification);
-        sceneData.system_notification = null;
+    if (step.text.includes("Время пошло") || step.text.includes("Отсчет пошел")) {
+        startSearchTimer(true);
+    }
+
+    if (step.system_notification || sceneData.system_notification) {
+        let msg = step.system_notification || sceneData.system_notification;
+        setTimeout(() => {
+            showSystemMessage(msg);
+            sceneData.system_notification = null;
+        }, 1000);
     }
 }
 
@@ -69,7 +73,7 @@ function typeWriter(text) {
         if (i < text.length) {
             textElement.innerText += text.charAt(i);
             i++;
-            typingTimeout = setTimeout(type, 25);
+            typingTimeout = setTimeout(type, 20);
         } else isTyping = false;
     }
     type();
@@ -79,6 +83,22 @@ function showSystemMessage(text, callback) {
     const overlay = document.getElementById('system-notification');
     document.getElementById('notification-text').innerText = text.toUpperCase();
     overlay.style.display = 'flex';
+
+    // --- ЛОГИКА ШТРАФА ВНУТРИ УВЕДОМЛЕНИЯ ---
+    if (text.includes("БАЗОЙ ДАННЫХ")) {
+        // Отнимаем 10 минут
+        searchTimeSeconds = Math.max(0, searchTimeSeconds - 600);
+        updateSearchTimerDisplay();
+        
+        // Показываем анимацию штрафа рядом с таймером
+        const penalty = document.getElementById('game-penalty-popup');
+        if (penalty) {
+            penalty.innerText = "-10:00 MIN";
+            penalty.classList.add('penalty-animation');
+            setTimeout(() => penalty.classList.remove('penalty-animation'), 2000);
+        }
+    }
+
     document.getElementById('close-notification').onclick = () => {
         overlay.style.display = 'none';
         if (callback) callback();
@@ -92,12 +112,10 @@ document.getElementById('click-overlay').addEventListener('click', () => {
         isTyping = false;
         return; 
     }
-
     if (currentState === 'intro_steps' && currentStep === sceneData.intro_steps.length - 1 && sceneData.phone_trigger) {
         showPhoneUI();
         return;
     }
-
     if (currentStep < sceneData[currentState].length - 1) {
         currentStep++;
         render();
@@ -106,26 +124,31 @@ document.getElementById('click-overlay').addEventListener('click', () => {
             currentState = 'dialogue_steps';
             currentStep = 0;
             render();
-        } else if (sceneData.search_interact && currentState !== 'search_mode') {
+        } else if (sceneData.search_interact || sceneData.final_choice_interact) {
             showSearchUI();
-            currentState = 'search_mode';
-        } else if (currentState !== 'search_mode') {
+        } else {
             handleEndOfScene();
         }
     }
 });
 
 function handleEndOfScene() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sceneId = parseInt(urlParams.get('scene_id') || "1");
-    let msg = (sceneId === 2 && searchTimeSeconds <= 0) ? "ВЫ НЕ УСПЕЛИ..." : "ВЫ НАШЛИ ЛИСТОК БУМАГИ!";
-    
-    showSystemMessage(msg, () => {
+    const sceneId = parseInt(sceneData.scene_id);
+    console.log("Конец сцены, переходим:", sceneId);
+
+    if (sceneId === 1) {
+        window.location.href = `/tasks?task_id=1&seconds=${searchTimeSeconds}`;
+    } else if (sceneId === 3) {
+        window.location.href = `/tasks?task_id=2&seconds=${searchTimeSeconds}`;
+    } else if (sceneId === 5) {
+        window.location.href = `/tasks?task_id=3&seconds=${searchTimeSeconds}`;
+    } else if (sceneId === 7) {
+        window.location.href = '/'; 
+    } else {
         window.location.href = `/game?scene_id=${sceneId + 1}&seconds=${searchTimeSeconds}`;
-    });
+    }
 }
 
-// Остальные функции (Timer, UI) остаются как были
 function startSearchTimer(reset = true) {
     const timerBlock = document.getElementById('search-timer-block');
     if (timerBlock) timerBlock.style.display = 'flex';
@@ -136,6 +159,7 @@ function startSearchTimer(reset = true) {
         else { clearInterval(searchTimerInterval); window.location.href = `/game?scene_id=${sceneData.scene_id}&seconds=0`; }
     }, 1000);
 }
+
 function updateSearchTimerDisplay() {
     const timerDisplay = document.getElementById('game-timer-display');
     if (!timerDisplay) return;
@@ -144,34 +168,173 @@ function updateSearchTimerDisplay() {
     if (seconds < 10) seconds = '0' + seconds;
     timerDisplay.innerText = `${minutes}:${seconds}`;
 }
+
 function showPhoneUI() {
     const overlay = document.getElementById('choices-overlay');
     overlay.innerHTML = `<div class="phone-trigger-wrapper pos-phone"><div class="phone-arrow"></div><button class="phone-custom-btn">${sceneData.phone_trigger.prompt}</button></div>`;
     overlay.querySelector('.phone-custom-btn').onclick = () => { overlay.innerHTML = ""; currentState = 'dialogue_steps'; currentStep = 0; render(); };
 }
+
 function showSearchUI() {
     const overlay = document.getElementById('choices-overlay');
     overlay.innerHTML = "";
-    if (searchTimeSeconds <= 0) startSearchTimer(true);
-    sceneData.search_interact.choices.forEach(choice => {
+    let choices = sceneData.search_interact ? sceneData.search_interact.choices : sceneData.final_choice_interact.choices;
+
+    choices.forEach(choice => {
         const wrapper = document.createElement('div');
         wrapper.className = `phone-trigger-wrapper pos-${choice.id}`;
-        const arrowClass = (choice.id === 'door') ? 'phone-arrow arrow-right' : 'phone-arrow';
+        const arrowClass = (choice.id === 'door' || choice.id === 'pick_card') ? 'phone-arrow arrow-right' : 'phone-arrow';
         wrapper.innerHTML = `<div class="${arrowClass}"></div><button class="phone-custom-btn">${choice.text}</button>`;
         wrapper.querySelector('.phone-custom-btn').onclick = () => handleSearchAction(choice.id);
         overlay.appendChild(wrapper);
     });
 }
+
 async function handleSearchAction(actionId) {
-    const response = await fetch('/api/game/action', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action_id: actionId }) });
+    const response = await fetch('/api/game/action', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ action_id: actionId }) 
+    });
     const result = await response.json();
-    if (result.status === 'win') { clearInterval(searchTimerInterval); window.location.href = `/tasks?seconds=${searchTimeSeconds}`; }
+    
+    // Очищаем экран от кнопок выбора
+    document.getElementById('choices-overlay').innerHTML = "";
+    
+    // 1. Если бэкенд говорит, что мы победили в поиске (win)
+    if (result.status === 'win') { 
+        clearInterval(searchTimerInterval);
+        
+        // Определяем, куда идти в зависимости от текущей сцены
+        let nextTask = 1; // По умолчанию
+        if (sceneData.scene_id === 1) nextTask = 1;
+        else if (sceneData.scene_id === 5) nextTask = 3; // После 5 сцены идет 3 задание
+        
+        window.location.href = `/tasks?task_id=${nextTask}&seconds=${searchTimeSeconds}`; 
+    } 
+    // 2. Если бэкенд прислал текст (например, диалог после выбора)
+    else if (result.dialogue_steps && result.dialogue_steps.length > 0) {
+        currentState = 'dialogue_steps';
+        currentStep = 0;
+        // Подменяем данные сцены на те, что пришли из ответа (текст допроса курьера и т.д.)
+        sceneData.dialogue_steps = result.dialogue_steps; 
+        
+        // Если пришло уведомление (например, про 10 минут штрафа)
+        if (result.system_notification) {
+            showSystemMessage(result.system_notification);
+        }
+        
+        // Обновляем время, если оно изменилось
+        if (result.time_left !== undefined) {
+            searchTimeSeconds = result.time_left * 60;
+            updateSearchTimerDisplay();
+        }
+        
+        render(); // Рисуем полученный диалог
+    }
+    // 3. Если просто ошибка или продолжаем
     else {
-        document.getElementById('main-dialogue').innerText = result.text;
-        searchTimeSeconds = Math.max(0, searchTimeSeconds - 300);
-        updateSearchTimerDisplay();
-        const penalty = document.getElementById('game-penalty-popup');
-        if (penalty) { penalty.classList.add('penalty-animation'); setTimeout(() => penalty.classList.remove('penalty-animation'), 2000); }
+        document.getElementById('main-dialogue').innerText = result.text || "Ничего не произошло.";
+        if (result.time_left !== undefined) {
+            searchTimeSeconds = result.time_left * 60;
+            updateSearchTimerDisplay();
+        }
     }
 }
+
+// --- ФИНАЛЬНЫЙ ПАЗЛ (СЦЕНА 7) ---
+function startFinalPuzzle(config) {
+    console.log("Запуск финального пазла с конфигом:", config); // Для отладки
+    
+    let timeLeft = config.timer_limit_seconds || 35;
+    const overlay = document.getElementById('choices-overlay');
+    const mainClickLayer = document.getElementById('click-overlay');
+
+    // Блокируем клики по фону, чтобы не закрыть окно случайно
+    mainClickLayer.style.pointerEvents = 'none';
+
+    overlay.innerHTML = `
+        <div id="final-puzzle-box">
+            <div id="final-timer">${timeLeft}</div>
+            <p class="final-puzzle-title">КТО ОСТАВИЛ ЭТОТ ЛИСТОК?</p>
+            <input type="text" id="final-input" placeholder="..." autocomplete="off">
+            <br>
+            <button id="final-submit" class="btn-task">СДАТЬ ОТВЕТ</button>
+        </div>
+    `;
+
+    // Автофокус на поле ввода
+    setTimeout(() => {
+        const input = document.getElementById('final-input');
+        if (input) input.focus();
+    }, 200);
+
+    // Таймер
+    const timer = setInterval(() => {
+        timeLeft--;
+        const timerElem = document.getElementById('final-timer');
+        if (timerElem) {
+            timerElem.innerText = timeLeft;
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            mainClickLayer.style.pointerEvents = 'auto'; 
+            renderFinalBranch(config.lose_branch);
+        }
+    }, 1000);
+
+    // Обработка клика по кнопке "Сдать"
+    document.getElementById('final-submit').onclick = (e) => {
+        e.stopPropagation(); // Защита от пролета клика сквозь кнопку
+        
+        const input = document.getElementById('final-input');
+        const val = input.value.toUpperCase().trim();
+        
+        console.log("Введено слово:", val);
+        clearInterval(timer); // Останавливаем таймер
+        
+        // Возвращаем возможность кликать по экрану
+        mainClickLayer.style.pointerEvents = 'auto'; 
+
+        // Проверяем ответ
+        if (val === config.correct_word.toUpperCase()) {
+            renderFinalBranch(config.win_branch);
+        } else {
+            renderFinalBranch(config.lose_branch);
+        }
+    };
+}
+
+// --- ОТРИСОВКА ИТОГА ФИНАЛА ---
+function renderFinalBranch(branch) {
+    console.log("Отрисовка финала:", branch);
+    
+    // 1. ВАЖНО: Удаляем данные об интерактиве, чтобы клики по экрану 
+    // больше не вызывали появление стрелок/кнопок
+    sceneData.search_interact = null;
+    sceneData.final_choice_interact = null;
+    currentState = 'dialogue_steps'; // Переключаем состояние в обычный текст
+
+    // 2. Полностью очищаем слой с кнопками и окном ввода
+    document.getElementById('choices-overlay').innerHTML = "";
+    
+    // 3. Выводим текст результата через нашу "печатную машинку"
+    if (branch && branch.text) {
+        typeWriter(branch.text);
+    } else {
+        document.getElementById('main-dialogue').innerText = "ИГРА ЗАВЕРШЕНА.";
+    }
+
+    // 4. Через 7 секунд показываем финальное системное уведомление
+    setTimeout(() => {
+        // Проверяем, не ушел ли пользователь уже со страницы
+        if (window.location.pathname.includes('game')) {
+            showSystemMessage("СПАСИБО ЗА ИГРУ! ВЫ ПРОШЛИ ДЕТЕКТИВЧИК ДО КОНЦА.", () => {
+                window.location.href = '/'; // Возврат в меню
+            });
+        }
+    }, 12000);
+}
+
 loadScene();

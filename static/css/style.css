@@ -425,7 +425,7 @@
 /* ОБЩИЙ СТИЛЬ ТАЙМЕРА ДЛЯ ВСЕХ СТРАНИЦ */
 #search-timer-block, #task-timer-block {
     position: absolute;
-    top: 15px; 
+    top: 20px; 
     left: 50%;
     transform: translateX(-50%);
     font-size: 42px; /* Крупно */
@@ -704,4 +704,51 @@
 
 #close-notification:hover {
     color: #FFB84C !important;
+}
+
+
+/* --- СТИЛЬ ФИНАЛЬНОГО ПАЗЛА --- */
+#final-puzzle-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 5px solid #FFB84C; /* Оранжевая рамка как у кнопок */
+    padding: 50px;
+    text-align: center;
+    z-index: 110000 !important; /* Выше всех слоев */
+    width: 600px;
+    box-shadow: 0 0 30px rgba(255, 184, 76, 0.4);
+}
+
+#final-timer {
+    font-family: 'Arcade', sans-serif;
+    font-size: 60px;
+    color: #ff0000;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 0 black;
+}
+
+.final-puzzle-title {
+    color: white;
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+#final-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid white;
+    color: #FFB84C;
+    font-family: 'Arcade', sans-serif;
+    font-size: 40px;
+    text-align: center;
+    outline: none;
+    margin-bottom: 40px;
+}
+
+#final-input:focus {
+    border-bottom: 3px solid #FFB84C;
 }

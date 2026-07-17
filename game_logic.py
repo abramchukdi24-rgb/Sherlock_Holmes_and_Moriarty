@@ -4,19 +4,25 @@ from flask import session, jsonify
 
 # В game_logic.py обновляем функцию
 def inject_dynamic_notification(scene_data, current_scene):
-    # Вычисляем номер текущей задачи
-    task_number = current_scene // 2 if current_scene % 2 == 0 else (current_scene // 2) + 1
-    hints_used = session.get(f'task_{task_number}_hints_used', 0)
+    t1 = session.get('task_1_solved', False)
+    t2 = session.get('task_2_solved', False)
+    t3 = session.get('task_3_solved', False)
+    solved_count = sum([t1, t2, t3])
+    
+    notification = None
 
-    # Массив уведомлений (можно расширять)
-    notifications = {
-        1: "[Системное уведомление: Вы нашли листок бумаги]",
-        2: "[Системное уведомление: Похоже, вас ожидают]",
-        3: "[Системное уведомление: Он оставил слишком много]"
-    }
-    notification_text = notifications.get(hints_used,"[Системное уведомление: Он оставил слишком много]" if hints_used >= 3 else None)
+    # Сцена 4 (Результат 2 задания)
+    if current_scene == 4 and t2:
+        if t1 and t2: notification = "ПОХОЖЕ, ВАС ОЖИДАЮТ"
+        else: notification = "ВЫ НАШЛИ ЛИСТОК БУМАГИ"
 
-    scene_data["system_notification"] = notification_text
+    # Сцена 6 (Результат 3 задания)
+    elif current_scene == 6 and t3:
+        if solved_count == 3: notification = "ОН ОСТАВИЛ СЛИШКОМ МНОГО"
+        elif solved_count == 2: notification = "ПОХОЖЕ, ВАС ОЖИДАЮТ"
+        else: notification = "ВЫ НАШЛИ ЛИСТОК БУМАГИ"
+
+    scene_data["system_notification"] = notification
     return scene_data
 
 def apply_penalty(penalty_minutes, current_scene_id, action_id=None):
@@ -67,7 +73,6 @@ def handle_scene_one_actions(action_id):
     })
 
 def get_scene_three_data():
-    """Умная сборка Сцены №3 на основе прошлых выборов."""
     try:
         with open("data/scene_3.json", "r", encoding="utf-8") as f:
             full_data = json.load(f)
@@ -77,38 +82,34 @@ def get_scene_three_data():
     task_1_solved = session.get('task_1_solved', False)
     time_left = session.get('time_left', 35)
 
-    # Создаем итоговый плоский сценарий, который отдадим фронту
-    final_scene = {
-        "scene_id": 3,
-        "background": full_data["background"],
-        "intro_steps": full_data["intro_steps"],  # заменены ключи на соответствующие ключам scene_3.json
-        "interact": full_data["interact_action"],
-        "outro_steps": full_data["moriarty_outro"]
-    }
+    # 1. Выбираем, какой текст показать (спасение или смерть)
+    moriarty_var = full_data["moriarty_variations"]["save"] if task_1_solved else full_data["moriarty_variations"]["death"]
+    report_branch = full_data["branches"]["branch_a"] if task_1_solved else full_data["branches"]["branch_b"]
 
-    # Склеиваем звонок Мориарти и ветку рапорта в зависимости от исхода
-    if task_1_solved and time_left > 0:
-        # ВЕТКА А (Успех)
-        final_scene["moriarty_variant"] = full_data["moriarty_variations"]["save"]
-        final_scene["report_steps"] = full_data["branches"]["branch_a"]
-        final_scene["system_notification"] = None
-    else:
-        # ВЕТКА Б (Провал)
-        final_scene["moriarty_variant"] = full_data["moriarty_variations"]["death"]
-        final_scene["report_steps"] = full_data["branches"]["branch_b"]
-        final_scene["system_notification"] = "[Вы потеряли 10 минут на работу с базой данных!]"
+    # 2. СКЛЕИВАЕМ ВСЁ В ОДИН МАССИВ (чтобы JS просто листал текст)
+    # Интро + Реплика Мориарти + Прощание Мориарти + Рапорт + Финал
+    all_steps = full_data["intro_steps"] + [moriarty_var] + full_data["moriarty_outro"] + report_branch + full_data["final_steps"]
 
-        # Применяем штраф 10 минут за архив базы данных (один раз!)
+    # 3. Прикрепляем уведомление к последнему шагу рапорта, если был провал
+    if not task_1_solved:
+        # Ищем шаг про базу данных
+        for step in all_steps:
+            if "Поиск по свежим записям" in step["text"]:
+                step["system_notification"] = "ВЫ ПОТЕРЯЛИ 10 МИНУТ ПРИ РАБОТЕ С БАЗОЙ ДАННЫХ"
+        
+        # Списываем время
         if not session.get('scene_3_penalty_applied', False):
             time_left = max(0, time_left - 10)
             session['time_left'] = time_left
             session['scene_3_penalty_applied'] = True
 
-    # Записываем актуальное время
-    final_scene["current_time_left"] = time_left
-    session['last_tracked_scene'] = 3 # ФИКСИРУЕМ ПРОХОЖДЕНИЕ СЦЕНЫ
+    final_scene = {
+        "scene_id": 3,
+        "background": full_data["background"],
+        "intro_steps": all_steps, # JS увидит это и просто всё пролистает
+        "current_time_left": time_left
+    }
     return jsonify(final_scene)
-
 def handle_scene_five_actions(action_id):
     """Логика для Сцены №5: Допрос курьера."""
     try:
